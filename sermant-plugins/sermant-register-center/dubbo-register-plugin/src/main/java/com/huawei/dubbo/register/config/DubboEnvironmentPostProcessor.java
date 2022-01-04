@@ -47,8 +47,16 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String PLUGIN_NAME_KEY = "sermant.register.plugin.name";
 
+    private static final String SC_ADDRESS_KEY = "servicecomb.service.address";
+
+    private static final String SC_ADDRESS_DEFAULT_VALUE = "http://127.0.0.1:30100";
+
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
+        if (!ConditionOnDubbo.isLoadDubbo()) {
+            // dubbo的类都无法加载，就不需要注册dubbo配置到spring中了
+            return;
+        }
         YamlPropertySourceLoader loader = new YamlPropertySourceLoader();
         try (JarFile jarFile = new JarFile(getClass().getProtectionDomain().getCodeSource().getLocation().getPath())) {
             String pluginPackageDir = BootArgsIndexer.getPluginPackageDir().getCanonicalPath();
@@ -58,6 +66,7 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
             List<PropertySource<?>> sources = loader.load(PROPERTY_SOURCE_NAME, new FileUrlResource(configPath));
             environment.getPropertySources().addLast(sources.get(0));
             environment.getSystemProperties().put(PLUGIN_NAME_KEY, pluginName);
+            DubboCache.INSTANCE.setAddress(environment.getProperty(SC_ADDRESS_KEY, SC_ADDRESS_DEFAULT_VALUE));
         } catch (IOException e) {
             LOGGER.warning("Cannot not find the config.");
         }

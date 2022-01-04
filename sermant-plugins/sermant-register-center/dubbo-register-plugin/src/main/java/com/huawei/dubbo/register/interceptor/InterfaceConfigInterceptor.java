@@ -16,45 +16,50 @@
 
 package com.huawei.dubbo.register.interceptor;
 
-import com.huawei.dubbo.register.config.DubboCache;
+import com.huawei.dubbo.register.service.ApplicationConfigService;
+import com.huawei.dubbo.register.service.ConfigService;
+import com.huawei.dubbo.register.service.RegistryConfigService;
 import com.huawei.sermant.core.agent.common.BeforeResult;
 import com.huawei.sermant.core.agent.interceptor.InstanceMethodInterceptor;
 import com.huawei.sermant.core.lubanops.bootstrap.log.LogFactory;
-
-import org.apache.dubbo.config.ApplicationConfig;
+import com.huawei.sermant.core.service.ServiceManager;
 
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 增强AbstractInterfaceConfig类的getApplication方法，用来获取应用名
+ * 增强AbstractInterfaceConfig类的getApplication方法
  *
- * @author pengyuyi
+ * @author provenceee
  * @since 2021年11月8日
  */
 public class InterfaceConfigInterceptor implements InstanceMethodInterceptor {
     private static final Logger LOGGER = LogFactory.getLogger();
 
-    @Override
-    public void before(Object obj, Method method, Object[] arguments, BeforeResult beforeResult) throws Exception {
-    }
+    private static final Map<String, ConfigService> SERVICE_MAP = new HashMap<>();
 
     /**
-     * Dubbo启动时，获取并缓存应用名
-     *
-     * @param obj 增强的类
-     * @param method 增强的方法
-     * @param arguments 增强方法的所有参数
-     * @param result the method's original return value. May be null if the method triggers an exception.
-     * @return 返回值
-     * @throws Exception 增强时可能出现的异常
+     * 构造方法
      */
+    public InterfaceConfigInterceptor() {
+        ApplicationConfigService applicationConfigService = ServiceManager.getService(ApplicationConfigService.class);
+        SERVICE_MAP.put(applicationConfigService.getName(), applicationConfigService);
+        RegistryConfigService registryConfigService = ServiceManager.getService(RegistryConfigService.class);
+        SERVICE_MAP.put(registryConfigService.getName(), registryConfigService);
+    }
+
     @Override
-    public Object after(Object obj, Method method, Object[] arguments, Object result) throws Exception {
-        if (result instanceof ApplicationConfig) {
-            ApplicationConfig config = (ApplicationConfig) result;
-            DubboCache.INSTANCE.setServiceName(config.getName());
+    public void before(Object obj, Method method, Object[] arguments, BeforeResult beforeResult) {
+    }
+
+    @Override
+    public Object after(Object obj, Method method, Object[] arguments, Object result) {
+        ConfigService configService = SERVICE_MAP.get(method.getName());
+        if (configService != null) {
+            configService.after(obj, result);
         }
         return result;
     }

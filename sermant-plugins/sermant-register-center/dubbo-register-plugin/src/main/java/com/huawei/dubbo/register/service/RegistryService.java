@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package com.huawei.dubbo.register;
+package com.huawei.dubbo.register.service;
 
-import com.huawei.dubbo.register.config.DubboCache;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import com.huawei.dubbo.register.ServiceCenterRegistry;
+import com.huawei.dubbo.register.Subscription;
+import com.huawei.dubbo.register.config.DubboConfig;
+import com.huawei.sermant.core.plugin.service.PluginService;
 
 /**
- * sc注册工厂
+ * 注册服务
  *
  * @author provenceee
  * @date 2021/12/15
  */
-public class ServiceCenterRegistryFactory extends AbstractRegistryFactory {
-    @Override
-    protected Registry createRegistry(URL url) {
-        // 加载了sc的注册spi的标志
-        DubboCache.INSTANCE.loadSc();
-        return new ServiceCenterRegistry(url);
-    }
+public interface RegistryService extends PluginService {
+    void startRegistration(DubboConfig config);
+
+    void doSubscribe(Subscription subscription);
+
+    void shutdown();
+
+    void setServiceCenterRegistry(ServiceCenterRegistry registry);
 }

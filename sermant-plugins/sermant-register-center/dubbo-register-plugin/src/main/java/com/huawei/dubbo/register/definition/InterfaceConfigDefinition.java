@@ -27,7 +27,7 @@ import net.bytebuddy.matcher.ElementMatchers;
 /**
  * AbstractInterfaceConfig增强类
  *
- * @author pengyuyi
+ * @author provenceee
  * @date 2021/11/24
  */
 public class InterfaceConfigDefinition implements EnhanceDefinition {
@@ -35,7 +35,7 @@ public class InterfaceConfigDefinition implements EnhanceDefinition {
 
     private static final String INTERCEPT_CLASS = "com.huawei.dubbo.register.interceptor.InterfaceConfigInterceptor";
 
-    private static final String METHOD_NAME = "getApplication";
+    private static final String[] METHOD_NAME = {"getApplication", "setRegistries"};
 
     @Override
     public ClassMatcher enhanceClass() {
@@ -46,6 +46,6 @@ public class InterfaceConfigDefinition implements EnhanceDefinition {
     public MethodInterceptPoint[] getMethodInterceptPoints() {
         return new MethodInterceptPoint[]{
                 MethodInterceptPoint.newInstMethodInterceptPoint(INTERCEPT_CLASS,
-                        ElementMatchers.<MethodDescription>named(METHOD_NAME))};
+                        ElementMatchers.<MethodDescription>namedOneOf(METHOD_NAME))};
     }
 }

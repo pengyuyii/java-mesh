@@ -14,25 +14,37 @@
  * limitations under the License.
  */
 
-package com.huawei.dubbo.register;
+package com.huawei.dubbo.register.service;
 
 import com.huawei.dubbo.register.config.DubboCache;
 
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.Registry;
-import org.apache.dubbo.registry.support.AbstractRegistryFactory;
+import org.apache.dubbo.config.ApplicationConfig;
 
 /**
- * sc注册工厂
+ * 应用配置服务
  *
  * @author provenceee
- * @date 2021/12/15
+ * @date 2021/12/31
  */
-public class ServiceCenterRegistryFactory extends AbstractRegistryFactory {
+public class ApplicationConfigServiceImpl implements ApplicationConfigService {
+    private static final String INTERFACE_NAME = "getApplication";
+
+    /**
+     * 设置注册时的服务名
+     *
+     * @param obj 增强的类
+     * @param result 方法返回值
+     */
     @Override
-    protected Registry createRegistry(URL url) {
-        // 加载了sc的注册spi的标志
-        DubboCache.INSTANCE.loadSc();
-        return new ServiceCenterRegistry(url);
+    public void after(Object obj, Object result) {
+        if (result instanceof ApplicationConfig) {
+            ApplicationConfig config = (ApplicationConfig) result;
+            DubboCache.INSTANCE.setServiceName(config.getName());
+        }
+    }
+
+    @Override
+    public String getName() {
+        return INTERFACE_NAME;
     }
 }

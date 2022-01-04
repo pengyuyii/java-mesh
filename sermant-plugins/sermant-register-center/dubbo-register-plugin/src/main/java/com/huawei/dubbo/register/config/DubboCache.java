@@ -30,11 +30,40 @@ public enum DubboCache {
      */
     private String serviceName;
 
+    /**
+     * 注册地址
+     */
+    private String address;
+
+    /**
+     * 是否加载了sc的注册spi的标志
+     */
+    private boolean loadSc;
+
     public String getServiceName() {
         return serviceName;
     }
 
     public void setServiceName(String serviceName) {
         this.serviceName = serviceName;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    /**
+     * 加载sc spi
+     */
+    public void loadSc() {
+        loadSc = true;
+    }
+
+    public boolean isLoadSc() {
+        return loadSc;
     }
 }

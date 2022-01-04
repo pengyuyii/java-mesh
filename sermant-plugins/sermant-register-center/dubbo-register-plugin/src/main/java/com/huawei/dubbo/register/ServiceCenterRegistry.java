@@ -16,6 +16,7 @@
 
 package com.huawei.dubbo.register;
 
+import com.huawei.dubbo.register.service.RegistryService;
 import com.huawei.sermant.core.service.ServiceManager;
 
 import org.apache.dubbo.common.URL;
@@ -32,8 +33,8 @@ import java.util.List;
  * @date 2021/12/15
  */
 public class ServiceCenterRegistry extends FailbackRegistry {
-    private static final String PROTOCOL_CONSUMER = "consumer";
-    private final List<URL> registers;
+    private static final String CONSUMER_PROTOCOL_PREFIX = "consumer";
+    private final List<URL> registryUrls;
     private final RegistryService registryService;
 
     /**
@@ -43,15 +44,15 @@ public class ServiceCenterRegistry extends FailbackRegistry {
      */
     public ServiceCenterRegistry(URL url) {
         super(url);
-        this.registers = new ArrayList<>();
-        this.registryService = ServiceManager.getService(RegistryService.class);
-        this.registryService.setServiceCenterRegistry(this);
+        registryUrls = new ArrayList<>();
+        registryService = ServiceManager.getService(RegistryService.class);
+        registryService.setServiceCenterRegistry(this);
     }
 
     @Override
     public void doRegister(URL url) {
-        if (!url.getProtocol().equals(PROTOCOL_CONSUMER)) {
-            registers.add(url);
+        if (!CONSUMER_PROTOCOL_PREFIX.equals(url.getProtocol())) {
+            registryUrls.add(url);
         }
     }
 
@@ -62,7 +63,7 @@ public class ServiceCenterRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener notifyListener) {
-        if (url.getProtocol().equals(PROTOCOL_CONSUMER)) {
+        if (CONSUMER_PROTOCOL_PREFIX.equals(url.getProtocol())) {
             registryService.doSubscribe(new Subscription(url, notifyListener));
         }
     }
@@ -74,10 +75,10 @@ public class ServiceCenterRegistry extends FailbackRegistry {
 
     @Override
     public boolean isAvailable() {
-        throw new UnsupportedOperationException();
+        return true;
     }
 
-    public List<URL> getRegisters() {
-        return registers;
+    public List<URL> getRegistryUrls() {
+        return registryUrls;
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved
+ * Copyright (C) 2021-2021 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,23 +14,27 @@
  * limitations under the License.
  */
 
-package com.huawei.dubbo.register;
-
-import com.huawei.dubbo.register.config.DubboConfig;
-import com.huawei.sermant.core.plugin.service.PluginService;
+package com.huawei.dubbo.register.service;
 
 /**
- * 注册服务
+ * 接口配置服务
  *
  * @author provenceee
  * @date 2021/12/15
  */
-public interface RegistryService extends PluginService {
-    void startRegistration(DubboConfig config);
+public interface ConfigService {
+    /**
+     * 拦截点之后执行
+     *
+     * @param obj 增强的类
+     * @param result 方法返回值
+     */
+    void after(Object obj, Object result);
 
-    void doSubscribe(Subscription subscription);
-
-    void shutdown();
-
-    void setServiceCenterRegistry(ServiceCenterRegistry registry);
+    /**
+     * 获取实现类的名字
+     *
+     * @return 实现类的名字
+     */
+    String getName();
 }

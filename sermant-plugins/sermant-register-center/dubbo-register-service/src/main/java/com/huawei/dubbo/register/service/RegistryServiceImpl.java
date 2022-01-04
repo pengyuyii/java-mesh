@@ -15,8 +15,12 @@
  * limitations under the License.
  */
 
-package com.huawei.dubbo.register;
+package com.huawei.dubbo.register.service;
 
+import com.huawei.dubbo.register.ServiceCenterRegistry;
+import com.huawei.dubbo.register.Subscription;
+import com.huawei.dubbo.register.SubscriptionData;
+import com.huawei.dubbo.register.SubscriptionKey;
 import com.huawei.dubbo.register.config.DubboCache;
 import com.huawei.dubbo.register.config.DubboConfig;
 import com.huawei.sermant.core.lubanops.bootstrap.log.LogFactory;
@@ -145,7 +149,7 @@ public class RegistryServiceImpl implements RegistryService {
         microservice.setFramework(framework);
         if (serviceCenterRegistry != null) {
             microservice.setSchemas(
-                    serviceCenterRegistry.getRegisters().stream().map(URL::getPath).collect(Collectors.toList()));
+                    serviceCenterRegistry.getRegistryUrls().stream().map(URL::getPath).collect(Collectors.toList()));
         }
     }
 
@@ -165,7 +169,7 @@ public class RegistryServiceImpl implements RegistryService {
         if (serviceCenterRegistry == null) {
             return Collections.emptyList();
         }
-        return serviceCenterRegistry.getRegisters().stream()
+        return serviceCenterRegistry.getRegistryUrls().stream()
                 .map(url -> new URL(url.getProtocol(), url.getHost(), url.getPort()).toString()).distinct()
                 .collect(Collectors.toList());
     }
@@ -179,8 +183,8 @@ public class RegistryServiceImpl implements RegistryService {
         serviceCenterRegistration.setHeartBeatInterval(microserviceInstance.getHealthCheck().getInterval());
         if (serviceCenterRegistry != null) {
             microservice.setSchemas(
-                    serviceCenterRegistry.getRegisters().stream().map(URL::getPath).collect(Collectors.toList()));
-            serviceCenterRegistration.setSchemaInfos(serviceCenterRegistry.getRegisters().stream()
+                    serviceCenterRegistry.getRegistryUrls().stream().map(URL::getPath).collect(Collectors.toList()));
+            serviceCenterRegistration.setSchemaInfos(serviceCenterRegistry.getRegistryUrls().stream()
                     .map(this::createSchemaInfo).collect(Collectors.toList()));
         }
     }
@@ -195,10 +199,10 @@ public class RegistryServiceImpl implements RegistryService {
 
     private SchemaInfo createSchemaInfo(URL url) {
         URL newUrl = url.setHost(microservice.getServiceName());
-        return new SchemaInfo(newUrl.getPath(), newUrl.toString(), calcSchemaSummary(newUrl.toString()));
+        return new SchemaInfo(newUrl.getPath(), newUrl.toString(), getSchemaSummary(newUrl.toString()));
     }
 
-    private static String calcSchemaSummary(String schemaContent) {
+    private String getSchemaSummary(String schemaContent) {
         return DigestUtils.sha256Hex(schemaContent.getBytes(StandardCharsets.UTF_8));
     }
 
@@ -237,7 +241,7 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     private void updateInterfaceMap(Microservice service) {
-        if (service.getAppId().equals(microservice.getAppId())) {
+        if (microservice.getAppId().equals(service.getAppId())) {
             service.getSchemas().forEach(schema -> INTERFACE_MAP.put(schema, service));
         }
     }

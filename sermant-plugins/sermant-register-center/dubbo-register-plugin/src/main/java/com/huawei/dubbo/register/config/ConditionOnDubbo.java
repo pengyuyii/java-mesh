@@ -31,6 +31,15 @@ public class ConditionOnDubbo implements Condition {
 
     @Override
     public boolean matches(ConditionContext conditionContext, AnnotatedTypeMetadata annotatedTypeMetadata) {
+        return isLoadDubbo();
+    }
+
+    /**
+     * 是否加载了dubbo相关的类
+     *
+     * @return 是否加载了dubbo相关的类
+     */
+    public static boolean isLoadDubbo() {
         try {
             Class.forName(CLASS_NAME);
         } catch (Throwable throwable) {
