@@ -16,13 +16,8 @@
 
 package com.huawei.dubbo.register.service;
 
-import com.huawei.dubbo.register.config.DubboCache;
-
-import org.apache.dubbo.common.URL;
-import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.RegistryConfig;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -46,22 +41,22 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
      */
     @Override
     public void after(Object obj, Object result) {
-        if (obj instanceof AbstractInterfaceConfig) {
-            AbstractInterfaceConfig config = (AbstractInterfaceConfig) obj;
-            List<RegistryConfig> registries = config.getRegistries();
-            if (registries == null) {
-                registries = new ArrayList<>();
-            }
-            if (hasScRegistryConfig(registries)) {
-                // 如果存在sc的注册配置，就不再重复加载sc注册配置了
-                return;
-            }
-            URL url = URL.valueOf(DubboCache.INSTANCE.getAddress()).setProtocol(SC_REGISTRY_PROTOCOL);
-            RegistryConfig registryConfig = new RegistryConfig(url.toString());
-            registryConfig.setId(SC_REGISTRY_PROTOCOL);
-            registryConfig.setPrefix(DUBBO_REGISTRIES_CONFIG_PREFIX);
-            registries.add(registryConfig);
-        }
+//        if (obj instanceof AbstractInterfaceConfig) {
+//            AbstractInterfaceConfig config = (AbstractInterfaceConfig) obj;
+//            List<RegistryConfig> registries = config.getRegistries();
+//            if (registries == null) {
+//                registries = new ArrayList<>();
+//            }
+//            if (hasScRegistryConfig(registries)) {
+//                // 如果存在sc的注册配置，就不再重复加载sc注册配置了
+//                return;
+//            }
+//            URL url = URL.valueOf(DubboCache.INSTANCE.getAddress()).setProtocol(SC_REGISTRY_PROTOCOL);
+//            RegistryConfig registryConfig = new RegistryConfig(url.toString());
+//            registryConfig.setId(SC_REGISTRY_PROTOCOL);
+//            registryConfig.setPrefix(DUBBO_REGISTRIES_CONFIG_PREFIX);
+//            registries.add(registryConfig);
+//        }
     }
 
     @Override

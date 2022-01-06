@@ -182,8 +182,6 @@ public class RegistryServiceImpl implements RegistryService {
         serviceCenterRegistration.setMicroserviceInstance(microserviceInstance);
         serviceCenterRegistration.setHeartBeatInterval(microserviceInstance.getHealthCheck().getInterval());
         if (serviceCenterRegistry != null) {
-            microservice.setSchemas(
-                    serviceCenterRegistry.getRegistryUrls().stream().map(URL::getPath).collect(Collectors.toList()));
             serviceCenterRegistration.setSchemaInfos(serviceCenterRegistry.getRegistryUrls().stream()
                     .map(this::createSchemaInfo).collect(Collectors.toList()));
         }
