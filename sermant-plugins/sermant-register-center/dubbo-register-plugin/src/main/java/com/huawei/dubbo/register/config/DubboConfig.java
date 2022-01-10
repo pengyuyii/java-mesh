@@ -30,7 +30,7 @@ public class DubboConfig {
     /**
      * 插件名
      */
-    @Value("${sermant.register.plugin.name:register-center}")
+    @Value("${servicecomb.service.pluginName:register-center}")
     private String pluginName;
 
     /**
@@ -85,35 +85,71 @@ public class DubboConfig {
         return pluginName;
     }
 
+    public void setPluginName(String pluginName) {
+        this.pluginName = pluginName;
+    }
+
     public String getProject() {
         return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
     }
 
     public String getApplication() {
         return application;
     }
 
+    public void setApplication(String application) {
+        this.application = application;
+    }
+
     public String getVersion() {
         return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     public String getEnvironment() {
         return environment;
     }
 
+    public void setEnvironment(String environment) {
+        this.environment = environment;
+    }
+
     public List<String> getAddress() {
         return address;
+    }
+
+    public void setAddress(List<String> address) {
+        this.address = address;
     }
 
     public int getHeartbeatInterval() {
         return heartbeatInterval;
     }
 
+    public void setHeartbeatInterval(int heartbeatInterval) {
+        this.heartbeatInterval = heartbeatInterval;
+    }
+
     public int getHeartbeatRetryTimes() {
         return heartbeatRetryTimes;
     }
 
+    public void setHeartbeatRetryTimes(int heartbeatRetryTimes) {
+        this.heartbeatRetryTimes = heartbeatRetryTimes;
+    }
+
     public int getPullInterval() {
         return pullInterval;
+    }
+
+    public void setPullInterval(int pullInterval) {
+        this.pullInterval = pullInterval;
     }
 }

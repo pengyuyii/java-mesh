@@ -33,7 +33,9 @@ public enum DubboCache {
     /**
      * 注册地址
      */
-    private String address;
+//    private String address;
+
+    private DubboConfig dubboConfig;
 
     /**
      * 是否加载了sc的注册spi的标志
@@ -48,12 +50,20 @@ public enum DubboCache {
         this.serviceName = serviceName;
     }
 
-    public String getAddress() {
-        return address;
+//    public String getAddress() {
+//        return address;
+//    }
+//
+//    public void setAddress(String address) {
+//        this.address = address;
+//    }
+
+    public DubboConfig getDubboConfig() {
+        return dubboConfig;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setDubboConfig(DubboConfig dubboConfig) {
+        this.dubboConfig = dubboConfig;
     }
 
     /**

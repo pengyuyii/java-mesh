@@ -17,6 +17,7 @@
 package com.huawei.dubbo.register;
 
 import com.huawei.dubbo.register.service.DiscoveryService;
+import com.huawei.dubbo.register.service.RegistryService;
 import com.huawei.sermant.core.service.ServiceManager;
 
 import org.apache.dubbo.common.URL;
@@ -36,14 +37,18 @@ public class ServiceCenterServiceDiscovery extends AbstractServiceDiscovery {
 
     private final DiscoveryService discoveryService;
 
+    private final RegistryService registryService;
+
     public ServiceCenterServiceDiscovery() {
         discoveryService = ServiceManager.getService(DiscoveryService.class);
+        registryService = ServiceManager.getService(RegistryService.class);
     }
 
     @Override
     public void doInitialize(URL registryUrl) throws Exception {
         this.registryUrl = registryUrl;
         discoveryService.init(registryUrl);
+        registryService.init(registryUrl);
     }
 
     @Override
@@ -70,18 +75,19 @@ public class ServiceCenterServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public Set<String> getServices() {
-        return discoveryService.getServices();
+        return registryService.getServices();
     }
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) throws NullPointerException {
-        return discoveryService.getInstances(serviceName);
+        return registryService.getInstances(serviceName);
     }
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-        discoveryService.addServiceInstancesChangedListener(listener);
+//        discoveryService.addServiceInstancesChangedListener(listener);
+        registryService.addServiceInstancesChangedListener(listener, registryUrl);
     }
 
     @Override

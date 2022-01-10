@@ -14,36 +14,19 @@
  * limitations under the License.
  */
 
-package com.huawei.dubbo.register.service;
-
-import com.huawei.sermant.core.plugin.service.PluginService;
+package com.huawei.dubbo.register;
 
 import org.apache.dubbo.common.URL;
-import org.apache.dubbo.registry.client.ServiceInstance;
-
-import java.util.List;
-import java.util.Set;
+import org.apache.dubbo.metadata.report.MetadataReport;
+import org.apache.dubbo.metadata.report.support.AbstractMetadataReportFactory;
 
 /**
- * 注册服务
- *
  * @author provenceee
- * @date 2021/12/15
+ * @date 2022/1/6
  */
-public interface DiscoveryService extends PluginService {
-    void init(URL registryUrl);
-
-    void doRegister(ServiceInstance serviceInstance);
-
-    void doUpdate(ServiceInstance serviceInstance);
-
-    void doUnregister();
-
-    void doDestroy();
-
-    Set<String> getServices();
-
-    List<ServiceInstance> getInstances(String serviceName);
-
-//    void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener);
+public class ServiceCenterMetadataReportFactory extends AbstractMetadataReportFactory {
+    @Override
+    protected MetadataReport createMetadataReport(URL url) {
+        return new ServiceCenterMetadataReport(url);
+    }
 }

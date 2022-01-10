@@ -17,9 +17,16 @@
 package com.huawei.dubbo.register.service;
 
 import com.huawei.dubbo.register.ServiceCenterRegistry;
-import com.huawei.dubbo.register.Subscription;
 import com.huawei.dubbo.register.config.DubboConfig;
 import com.huawei.sermant.core.plugin.service.PluginService;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.registry.NotifyListener;
+import org.apache.dubbo.registry.client.ServiceInstance;
+import org.apache.dubbo.registry.client.event.listener.ServiceInstancesChangedListener;
+
+import java.util.List;
+import java.util.Set;
 
 /**
  * 注册服务
@@ -30,9 +37,17 @@ import com.huawei.sermant.core.plugin.service.PluginService;
 public interface RegistryService extends PluginService {
     void startRegistration(DubboConfig config);
 
-    void doSubscribe(Subscription subscription);
+    void doSubscribe(URL url, NotifyListener notifyListener);
 
     void shutdown();
 
     void setServiceCenterRegistry(ServiceCenterRegistry registry);
+
+    void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener, URL registryUrl);
+
+    Set<String> getServices();
+
+    List<ServiceInstance> getInstances(String serviceName);
+
+    void init(URL registryUrl);
 }

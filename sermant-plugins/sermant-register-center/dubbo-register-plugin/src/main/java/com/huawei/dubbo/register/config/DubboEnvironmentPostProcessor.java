@@ -22,6 +22,8 @@ import com.huawei.sermant.core.plugin.common.PluginConstant;
 import com.huawei.sermant.core.util.JarFileUtil;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.properties.bind.BindResult;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.env.EnvironmentPostProcessor;
 import org.springframework.boot.env.YamlPropertySourceLoader;
 import org.springframework.core.env.ConfigurableEnvironment;
@@ -45,11 +47,13 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String PROPERTY_SOURCE_NAME = "dubbo-sc";
 
-    private static final String PLUGIN_NAME_KEY = "sermant.register.plugin.name";
+    private static final String PLUGIN_NAME_KEY = "servicecomb.service.pluginName";
 
-    private static final String SC_ADDRESS_KEY = "servicecomb.service.address";
+//    private static final String SC_ADDRESS_KEY = "servicecomb.service.address";
 
-    private static final String SC_ADDRESS_DEFAULT_VALUE = "http://127.0.0.1:30100";
+    private static final String SC_CONFIG_PREFIX = "servicecomb.service";
+
+//    private static final String SC_ADDRESS_DEFAULT_VALUE = "http://127.0.0.1:30100";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -66,7 +70,9 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
             List<PropertySource<?>> sources = loader.load(PROPERTY_SOURCE_NAME, new FileUrlResource(configPath));
             environment.getPropertySources().addLast(sources.get(0));
             environment.getSystemProperties().put(PLUGIN_NAME_KEY, pluginName);
-            DubboCache.INSTANCE.setAddress(environment.getProperty(SC_ADDRESS_KEY, SC_ADDRESS_DEFAULT_VALUE));
+//            DubboCache.INSTANCE.setAddress(environment.getProperty(SC_ADDRESS_KEY, SC_ADDRESS_DEFAULT_VALUE));
+            BindResult<DubboConfig> bindResult = Binder.get(environment).bind(SC_CONFIG_PREFIX, DubboConfig.class);
+            DubboCache.INSTANCE.setDubboConfig(bindResult.orElseGet(DubboConfig::new));
         } catch (IOException e) {
             LOGGER.warning("Cannot not find the config.");
         }

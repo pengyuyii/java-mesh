@@ -34,7 +34,9 @@ import java.util.List;
  */
 public class ServiceCenterRegistry extends FailbackRegistry {
     private static final String CONSUMER_PROTOCOL_PREFIX = "consumer";
+
     private final List<URL> registryUrls;
+
     private final RegistryService registryService;
 
     /**
@@ -63,9 +65,7 @@ public class ServiceCenterRegistry extends FailbackRegistry {
 
     @Override
     public void doSubscribe(URL url, NotifyListener notifyListener) {
-        if (CONSUMER_PROTOCOL_PREFIX.equals(url.getProtocol())) {
-            registryService.doSubscribe(new Subscription(url, notifyListener));
-        }
+        registryService.doSubscribe(url, notifyListener);
     }
 
     @Override
