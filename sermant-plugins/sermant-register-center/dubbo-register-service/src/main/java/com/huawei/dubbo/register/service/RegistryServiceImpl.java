@@ -132,7 +132,7 @@ public class RegistryServiceImpl implements RegistryService {
                     serviceCenterRegistry.getRegistryUrls().stream().map(URL::getPath).collect(Collectors.toList()));
             microserviceInstance.setEndpoints(getEndpoints());
             serviceCenterRegistration.setSchemaInfos(serviceCenterRegistry.getRegistryUrls().stream()
-                    .filter(url -> url.getPort() == 0)
+                    /*.filter(url -> url.getPort() == 0)*/
                     .map(this::createSchemaInfo).collect(Collectors.toList()));
         }
         EVENT_BUS.register(this);
@@ -248,7 +248,7 @@ public class RegistryServiceImpl implements RegistryService {
             return Collections.emptyList();
         }
         return serviceCenterRegistry.getRegistryUrls().stream()
-                .filter(url -> url.getPort() != 0)
+                /*.filter(url -> url.getPort() != 0)*/
                 .map(url -> new URL(url.getProtocol(), url.getHost(), url.getPort()).toString()).distinct()
                 .collect(Collectors.toList());
     }

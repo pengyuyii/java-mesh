@@ -26,7 +26,9 @@ import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
@@ -36,31 +38,23 @@ import java.util.logging.Logger;
 public class MappingDynamicConfigListener implements DynamicConfigListener {
     private static final Logger LOGGER = LogFactory.getLogger();
 
-    private final String serviceKey;
+    private final Map<String, Set<MappingListener>> listeners;
 
-    private final Set<MappingListener> listeners;
-
-    /**
-     * 构造方法
-     *
-     * @param serviceKey 缓存的服务名
-     */
-    public MappingDynamicConfigListener(String serviceKey) {
-        this.serviceKey = serviceKey;
-        this.listeners = new HashSet<>();
+    public MappingDynamicConfigListener() {
+        listeners = new ConcurrentHashMap<>();
     }
 
-    public void addListener(MappingListener listener) {
-        listeners.add(listener);
+    public void addListener(String serviceKey, MappingListener listener) {
+        listeners.computeIfAbsent(serviceKey, k -> new HashSet<>()).add(listener);
     }
 
     @Override
     public void process(DynamicConfigEvent event) {
         if (DynamicConfigEventType.DELETE != event.getEventType()) {
-            if (serviceKey.equals(event.getKey())) {
+            if (listeners.get(event.getKey()) != null) {
                 Set<String> apps = ServiceNameMapping.getAppNames(event.getContent());
-                MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(serviceKey, apps);
-                listeners.forEach(listener -> listener.onEvent(mappingChangedEvent));
+                MappingChangedEvent mappingChangedEvent = new MappingChangedEvent(event.getKey(), apps);
+                listeners.get(event.getKey()).forEach(listener -> listener.onEvent(mappingChangedEvent));
             }
         }
     }

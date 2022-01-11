@@ -53,7 +53,7 @@ public class ServiceCenterRegistry extends FailbackRegistry {
 
     @Override
     public void doRegister(URL url) {
-        if (!CONSUMER_PROTOCOL_PREFIX.equals(url.getProtocol())) {
+        if (url.getPort() != 0) {
             registryUrls.add(url);
         }
     }

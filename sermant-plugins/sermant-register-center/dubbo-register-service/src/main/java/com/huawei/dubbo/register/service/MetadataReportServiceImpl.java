@@ -38,24 +38,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author provenceee
  * @date 2022/1/7
  */
 public class MetadataReportServiceImpl implements MetadataReportService {
-    private DynamicConfigService configService;
-
     private static final String REGISTRY_GROUP = "metadataType=registry";
 
     private static final String MAPPING_GROUP = "metadataType=mapping";
 
-    private static final Map<String, MappingDynamicConfigListener> LISTENER_MAP = new ConcurrentHashMap<>();
+    private DynamicConfigService configService;
+
+    private MappingDynamicConfigListener listener;
 
     @Override
     public void start() {
         configService = ServiceManager.getService(DynamicConfigService.class);
+        listener = new MappingDynamicConfigListener();
+        configService.addGroupListener(MAPPING_GROUP, listener);
     }
 
     @Override
@@ -118,12 +119,7 @@ public class MetadataReportServiceImpl implements MetadataReportService {
 
     @Override
     public Set<String> getServiceAppMapping(String serviceKey, MappingListener listener, URL url) {
-        if (LISTENER_MAP.get(serviceKey) == null) {
-            MappingDynamicConfigListener configListener = LISTENER_MAP
-                    .computeIfAbsent(serviceKey, k -> new MappingDynamicConfigListener(serviceKey));
-            configListener.addListener(listener);
-            configService.addConfigListener(serviceKey, MAPPING_GROUP, configListener);
-        }
+        this.listener.addListener(serviceKey, listener);
         return getServiceAppMapping(serviceKey, url);
     }
 
@@ -134,9 +130,8 @@ public class MetadataReportServiceImpl implements MetadataReportService {
 
     @Override
     public ConfigItem getConfigItem(String serviceKey, String group) {
-        String info = configService.getConfig(serviceKey, group);
-        String digest = StringUtils.isBlank(info) ? "" : DigestUtils.sha256Hex(info);
-        return new ConfigItem(info, digest);
+        String info = configService.getConfig(serviceKey, MAPPING_GROUP);
+        return new ConfigItem(info, StringUtils.isBlank(info) ? "" : DigestUtils.sha256Hex(info));
     }
 
     @Override
