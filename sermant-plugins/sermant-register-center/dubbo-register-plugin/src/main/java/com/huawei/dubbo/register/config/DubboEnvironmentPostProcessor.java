@@ -49,11 +49,7 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
 
     private static final String PLUGIN_NAME_KEY = "servicecomb.service.pluginName";
 
-//    private static final String SC_ADDRESS_KEY = "servicecomb.service.address";
-
     private static final String SC_CONFIG_PREFIX = "servicecomb.service";
-
-//    private static final String SC_ADDRESS_DEFAULT_VALUE = "http://127.0.0.1:30100";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment, SpringApplication application) {
@@ -70,7 +66,6 @@ public class DubboEnvironmentPostProcessor implements EnvironmentPostProcessor {
             List<PropertySource<?>> sources = loader.load(PROPERTY_SOURCE_NAME, new FileUrlResource(configPath));
             environment.getPropertySources().addLast(sources.get(0));
             environment.getSystemProperties().put(PLUGIN_NAME_KEY, pluginName);
-//            DubboCache.INSTANCE.setAddress(environment.getProperty(SC_ADDRESS_KEY, SC_ADDRESS_DEFAULT_VALUE));
             BindResult<DubboConfig> bindResult = Binder.get(environment).bind(SC_CONFIG_PREFIX, DubboConfig.class);
             DubboCache.INSTANCE.setDubboConfig(bindResult.orElseGet(DubboConfig::new));
         } catch (IOException e) {

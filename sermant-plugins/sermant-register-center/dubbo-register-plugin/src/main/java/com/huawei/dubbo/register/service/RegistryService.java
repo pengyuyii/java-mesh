@@ -17,7 +17,6 @@
 package com.huawei.dubbo.register.service;
 
 import com.huawei.dubbo.register.ServiceCenterRegistry;
-import com.huawei.dubbo.register.config.DubboConfig;
 import com.huawei.sermant.core.plugin.service.PluginService;
 
 import org.apache.dubbo.common.URL;
@@ -35,7 +34,7 @@ import java.util.Set;
  * @date 2021/12/15
  */
 public interface RegistryService extends PluginService {
-    void startRegistration(DubboConfig config);
+    void startRegistration();
 
     void doSubscribe(URL url, NotifyListener notifyListener);
 
@@ -50,4 +49,6 @@ public interface RegistryService extends PluginService {
     List<ServiceInstance> getInstances(String serviceName);
 
     void init(URL registryUrl);
+
+    List<URL> getDiscoveryUrls();
 }

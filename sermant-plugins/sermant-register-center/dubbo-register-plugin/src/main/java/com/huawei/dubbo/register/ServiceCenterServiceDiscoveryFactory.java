@@ -16,6 +16,8 @@
 
 package com.huawei.dubbo.register;
 
+import com.huawei.dubbo.register.config.DubboCache;
+
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.registry.client.AbstractServiceDiscoveryFactory;
 import org.apache.dubbo.registry.client.ServiceDiscovery;
@@ -27,6 +29,8 @@ import org.apache.dubbo.registry.client.ServiceDiscovery;
 public class ServiceCenterServiceDiscoveryFactory extends AbstractServiceDiscoveryFactory {
     @Override
     protected ServiceDiscovery createDiscovery(URL registryUrl) {
+        // 加载了sc的注册spi的标志
+        DubboCache.INSTANCE.loadSc();
         return new ServiceCenterServiceDiscovery();
     }
 }

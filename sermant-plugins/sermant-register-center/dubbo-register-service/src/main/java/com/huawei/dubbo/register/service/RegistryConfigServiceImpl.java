@@ -16,7 +16,12 @@
 
 package com.huawei.dubbo.register.service;
 
+import com.huawei.dubbo.register.config.DubboCache;
+
+import org.apache.dubbo.common.URL;
+import org.apache.dubbo.config.AbstractInterfaceConfig;
 import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.rpc.model.ScopeModelUtil;
 
 import java.util.List;
 
@@ -41,22 +46,37 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
      */
     @Override
     public void after(Object obj, Object result) {
-//        if (obj instanceof AbstractInterfaceConfig) {
-//            AbstractInterfaceConfig config = (AbstractInterfaceConfig) obj;
-//            List<RegistryConfig> registries = config.getRegistries();
-//            if (registries == null) {
-//                registries = new ArrayList<>();
-//            }
-//            if (hasScRegistryConfig(registries)) {
-//                // 如果存在sc的注册配置，就不再重复加载sc注册配置了
-//                return;
-//            }
-//            URL url = URL.valueOf(DubboCache.INSTANCE.getAddress()).setProtocol(SC_REGISTRY_PROTOCOL);
-//            RegistryConfig registryConfig = new RegistryConfig(url.toString());
-//            registryConfig.setId(SC_REGISTRY_PROTOCOL);
+        /*if (obj instanceof AbstractInterfaceConfig) {
+            AbstractInterfaceConfig config = (AbstractInterfaceConfig) obj;
+            List<RegistryConfig> registries = config.getRegistries();
+            if (registries == null) {
+                registries = new ArrayList<>();
+            }
+            if (hasScRegistryConfig(registries)) {
+                // 如果存在sc的注册配置，就不再重复加载sc注册配置了
+                return;
+            }
+            URL url = URL.valueOf(DubboCache.INSTANCE.getAddress()).setProtocol(SC_REGISTRY_PROTOCOL);
+            RegistryConfig registryConfig = new RegistryConfig(url.toString());
+            registryConfig.setId(SC_REGISTRY_PROTOCOL);
+            registryConfig.setPrefix(DUBBO_REGISTRIES_CONFIG_PREFIX);
+            registries.add(registryConfig);
+        }*/
+        if (obj instanceof AbstractInterfaceConfig) {
+            AbstractInterfaceConfig config = (AbstractInterfaceConfig) obj;
+            List<RegistryConfig> registries = config.getRegistries();
+            if (registries == null || hasScRegistryConfig(registries)) {
+                // 如果为null或存在sc的注册配置，就不再加载sc注册配置了
+                return;
+            }
+            URL url = URL.valueOf(DubboCache.INSTANCE.getDubboConfig().getAddress().get(0))
+                    .setProtocol(SC_REGISTRY_PROTOCOL);
+            RegistryConfig registryConfig = new RegistryConfig(url.toString());
+            registryConfig.setId(SC_REGISTRY_PROTOCOL);
+            registryConfig.setScopeModel(ScopeModelUtil.getApplicationModel(registryConfig.getScopeModel()));
 //            registryConfig.setPrefix(DUBBO_REGISTRIES_CONFIG_PREFIX);
-//            registries.add(registryConfig);
-//        }
+            registries.add(registryConfig);
+        }
     }
 
     @Override
@@ -66,7 +86,7 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
 
     private boolean hasScRegistryConfig(List<RegistryConfig> registries) {
         for (RegistryConfig registry : registries) {
-            if (registry != null && SC_REGISTRY_PROTOCOL.equals(registry.getId())) {
+            if (SC_REGISTRY_PROTOCOL.equals(registry.getId()) || "N/A".equalsIgnoreCase(registry.getAddress())) {
                 return true;
             }
         }

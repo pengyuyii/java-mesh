@@ -1,1 +1,4 @@
+com.huawei.dubbo.register.definition.ConfigManagerDefinition
 com.huawei.dubbo.register.definition.InterfaceConfigDefinition
+com.huawei.dubbo.register.definition.NameMappingDefinition
+com.huawei.dubbo.register.definition.ReportInstanceDefinition

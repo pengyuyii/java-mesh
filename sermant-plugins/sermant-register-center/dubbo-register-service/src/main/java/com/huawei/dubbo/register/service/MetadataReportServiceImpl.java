@@ -17,17 +17,20 @@
 package com.huawei.dubbo.register.service;
 
 import com.huawei.dubbo.register.MappingDynamicConfigListener;
+import com.huawei.dubbo.register.config.DubboCache;
 import com.huawei.sermant.core.lubanops.bootstrap.utils.StringUtils;
 import com.huawei.sermant.core.service.ServiceManager;
 import com.huawei.sermant.core.service.dynamicconfig.DynamicConfigService;
 
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.dubbo.common.URL;
 import org.apache.dubbo.common.config.configcenter.ConfigItem;
 import org.apache.dubbo.metadata.MappingListener;
 import org.apache.dubbo.metadata.MetadataInfo;
+import org.apache.dubbo.metadata.MetadataService;
 import org.apache.dubbo.metadata.ServiceNameMapping;
 import org.apache.dubbo.metadata.report.identifier.BaseMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.MetadataIdentifier;
@@ -35,6 +38,7 @@ import org.apache.dubbo.metadata.report.identifier.ServiceMetadataIdentifier;
 import org.apache.dubbo.metadata.report.identifier.SubscriberMetadataIdentifier;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,17 +54,35 @@ public class MetadataReportServiceImpl implements MetadataReportService {
 
     private DynamicConfigService configService;
 
+    private RegistryService registryService;
+
     private MappingDynamicConfigListener listener;
 
     @Override
     public void start() {
         configService = ServiceManager.getService(DynamicConfigService.class);
         listener = new MappingDynamicConfigListener();
-        configService.addGroupListener(MAPPING_GROUP, listener);
+        configService.addGroupListener(MAPPING_GROUP, listener, true);
     }
 
     @Override
     public void doStoreProviderMetadata(MetadataIdentifier identifier, String serviceDefinitions) {
+        String serviceInterface = identifier.getServiceInterface();
+        if (!MetadataService.SERVICE_INTERFACE_NAME.equals(serviceInterface)) {
+            JSONObject json = JSONObject.parseObject(serviceDefinitions);
+            Map<String, String> parameters = json.getObject("parameters", new TypeReference<HashMap<String, String>>() {
+            });
+            URL url;
+            if (DubboCache.INSTANCE.getAddress() == null) {
+                url = new URL("dubbo", "127.0.0.1", 0, parameters);
+            } else {
+                url = URL.valueOf(DubboCache.INSTANCE.getAddress()).setProtocol("dubbo").addParameters(parameters);
+            }
+            if (registryService == null) {
+                registryService = ServiceManager.getService(RegistryService.class);
+            }
+            registryService.getDiscoveryUrls().add(url.setPath(serviceInterface));
+        }
         configService.removeConfig(getIdentifierKey(identifier), REGISTRY_GROUP);
         configService.publishConfig(getIdentifierKey(identifier), REGISTRY_GROUP, serviceDefinitions);
     }
@@ -142,6 +164,7 @@ public class MetadataReportServiceImpl implements MetadataReportService {
     }
 
     private String getIdentifierKey(BaseMetadataIdentifier identifier) {
-        return identifier.getIdentifierKey().replace(":", "..-");
+        //kie配置的key值不支持冒号（:），所以替换成点（.）
+        return identifier.getIdentifierKey().replace(":", ".");
     }
 }

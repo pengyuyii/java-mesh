@@ -33,8 +33,6 @@ import java.util.List;
  * @date 2021/12/15
  */
 public class ServiceCenterRegistry extends FailbackRegistry {
-    private static final String CONSUMER_PROTOCOL_PREFIX = "consumer";
-
     private final List<URL> registryUrls;
 
     private final RegistryService registryService;

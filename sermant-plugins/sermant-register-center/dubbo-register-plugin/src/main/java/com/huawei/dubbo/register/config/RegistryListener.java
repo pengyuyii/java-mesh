@@ -19,7 +19,6 @@ package com.huawei.dubbo.register.config;
 import com.huawei.dubbo.register.service.RegistryService;
 import com.huawei.sermant.core.service.ServiceManager;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.event.ApplicationStartedEvent;
 import org.springframework.context.event.EventListener;
 
@@ -32,9 +31,6 @@ import org.springframework.context.event.EventListener;
 public class RegistryListener {
     private final RegistryService registryService;
 
-    @Autowired
-    private DubboConfig config;
-
     public RegistryListener() {
         registryService = ServiceManager.getService(RegistryService.class);
     }
@@ -46,7 +42,7 @@ public class RegistryListener {
     public void listen() {
         if (DubboCache.INSTANCE.isLoadSc()) {
             // 加载了sc的注册spi才会注册到sc上面
-            registryService.startRegistration(config);
+            registryService.startRegistration();
         }
     }
 }

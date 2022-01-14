@@ -33,6 +33,7 @@ import com.google.common.eventbus.Subscribe;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.dubbo.common.URL;
+import org.apache.dubbo.common.function.ThrowableFunction;
 import org.apache.dubbo.registry.NotifyListener;
 import org.apache.dubbo.registry.client.DefaultServiceInstance;
 import org.apache.dubbo.registry.client.ServiceInstance;
@@ -90,10 +91,13 @@ public class RegistryServiceImpl implements RegistryService {
     private static final Map<SubscriptionKey, SubscriptionData> SUBSCRIPTIONS = new ConcurrentHashMap<>();
     private static final CountDownLatch FIRST_REGISTRATION_WAITER = new CountDownLatch(1);
     private static final List<Subscription> PENDING_SUBSCRIBE_EVENT = new CopyOnWriteArrayList<>();
+    private static final Map<String, ServiceInstancesChangedListener> LISTENER_MAP = new ConcurrentHashMap<>();
     private static final AtomicBoolean SHUTDOWN = new AtomicBoolean();
+    private static final AtomicBoolean INIT = new AtomicBoolean();
     private static final String FRAMEWORK_NAME = "sermant";
     private static final String DEFAULT_TENANT_NAME = "default";
     private static final String PROVIDER_PROTOCOL_PREFIX = "provider";
+    private final List<URL> discoveryUrls = new ArrayList<>();
     private ServiceCenterClient client;
     private Microservice microservice;
     private MicroserviceInstance microserviceInstance;
@@ -102,9 +106,7 @@ public class RegistryServiceImpl implements RegistryService {
     private ServiceCenterDiscovery serviceCenterDiscovery;
     private boolean registrationInProgress = true;
     private DubboConfig config;
-    private ServiceInstancesChangedListener listener;
     private URL registryUrl;
-    private static final AtomicBoolean INIT = new AtomicBoolean();
 
     @Override
     public void init(URL registryUrl) {
@@ -125,19 +127,33 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     @Override
-    public void startRegistration(DubboConfig config) {
+    public void startRegistration() {
         init();
-        if (serviceCenterRegistry != null) {
-            microservice.setSchemas(
-                    serviceCenterRegistry.getRegistryUrls().stream().map(URL::getPath).collect(Collectors.toList()));
-            microserviceInstance.setEndpoints(getEndpoints());
-            serviceCenterRegistration.setSchemaInfos(serviceCenterRegistry.getRegistryUrls().stream()
-                    /*.filter(url -> url.getPort() == 0)*/
-                    .map(this::createSchemaInfo).collect(Collectors.toList()));
-        }
+        List<URL> urls = getUrls();
+        microservice.setSchemas(getSchemas(urls));
+        microserviceInstance.setEndpoints(getEndpoints(urls));
+        serviceCenterRegistration.setSchemaInfos(getSchemaInfos(urls));
         EVENT_BUS.register(this);
         serviceCenterRegistration.startRegistration();
         waitRegistrationDone();
+    }
+
+    private List<URL> getUrls() {
+        return serviceCenterRegistry == null || CollectionUtils.isEmpty(serviceCenterRegistry.getRegistryUrls())
+                ? discoveryUrls : serviceCenterRegistry.getRegistryUrls();
+    }
+
+    private List<String> getSchemas(List<URL> urls) {
+        return urls.stream().map(URL::getPath).collect(Collectors.toList());
+    }
+
+    private List<String> getEndpoints(List<URL> urls) {
+        return urls.stream().map(url -> new URL(url.getProtocol(), url.getHost(), url.getPort()).toString()).distinct()
+                .collect(Collectors.toList());
+    }
+
+    private List<SchemaInfo> getSchemaInfos(List<URL> urls) {
+        return urls.stream().map(this::createSchemaInfo).collect(Collectors.toList());
     }
 
     @Override
@@ -176,49 +192,58 @@ public class RegistryServiceImpl implements RegistryService {
 
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener, URL registryUrl) {
-        this.listener = listener;
-//        this.registryUrl = registryUrl;
+        listener.getServiceNames().forEach(name -> LISTENER_MAP.put(name, listener));
     }
 
     @Override
     public Set<String> getServices() {
-//        return ThrowableFunction.execute(client, f -> {
-        MicroservicesResponse microserviceList = client.getMicroserviceList();
-        return microserviceList.getServices().stream().map(Microservice::getServiceName)
-                .collect(Collectors.toSet());
-//        });
+        return ThrowableFunction.execute(client, f -> {
+            MicroservicesResponse microserviceList = client.getMicroserviceList();
+            return microserviceList.getServices().stream().map(Microservice::getServiceName)
+                    .collect(Collectors.toSet());
+        });
     }
 
     @Override
     public List<ServiceInstance> getInstances(String serviceName) {
-//        return ThrowableFunction.execute(client, f -> {
-        init();
-        MicroservicesResponse microserviceList = client.getMicroserviceList();
-        List<Microservice> services = microserviceList.getServices();
-        if (CollectionUtils.isEmpty(services)) {
-            return Collections.emptyList();
-        }
-        String serviceId = null;
-        for (Microservice service : services) {
-            if (serviceName.equals(service.getServiceName())) {
-                serviceId = service.getServiceId();
-                break;
+        return ThrowableFunction.execute(client, f -> {
+            init();
+            MicroservicesResponse microserviceList = client.getMicroserviceList();
+            List<Microservice> services = microserviceList.getServices();
+            if (CollectionUtils.isEmpty(services)) {
+                return Collections.emptyList();
             }
-        }
-        if (StringUtils.isBlank(serviceId)) {
-            return Collections.emptyList();
-        }
-        MicroserviceInstancesResponse response = client.getMicroserviceInstanceList(serviceId);
-        return response.getInstances().stream().map(instance -> {
-            URL url = URL.valueOf(instance.getEndpoints().get(0));
-            DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName,
-                    url.getHost(), url.getPort(), ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
-            serviceInstance.setMetadata(instance.getProperties());
-            serviceInstance.setEnabled(instance.getStatus() == MicroserviceInstanceStatus.UP);
-            serviceInstance.setHealthy(instance.getStatus() == MicroserviceInstanceStatus.UP);
-            return serviceInstance;
-        }).collect(Collectors.toList());
-//        });
+            String serviceId = null;
+            for (Microservice service : services) {
+                if (serviceName.equals(service.getServiceName())) {
+                    serviceId = service.getServiceId();
+                    break;
+                }
+            }
+            if (StringUtils.isBlank(serviceId)) {
+                return Collections.emptyList();
+            }
+            MicroserviceInstancesResponse response = client.getMicroserviceInstanceList(serviceId);
+            List<MicroserviceInstance> instances = response.getInstances();
+            if (CollectionUtils.isEmpty(instances)) {
+                return Collections.emptyList();
+            }
+            return instances.stream()
+                    .filter(instance -> !CollectionUtils.isEmpty(instance.getEndpoints())).map(instance -> {
+                        URL url = URL.valueOf(instance.getEndpoints().get(0));
+                        DefaultServiceInstance serviceInstance = new DefaultServiceInstance(serviceName, url.getHost(),
+                                url.getPort(), ScopeModelUtil.getApplicationModel(registryUrl.getScopeModel()));
+                        serviceInstance.setMetadata(instance.getProperties());
+                        serviceInstance.setEnabled(instance.getStatus() == MicroserviceInstanceStatus.UP);
+                        serviceInstance.setHealthy(instance.getStatus() == MicroserviceInstanceStatus.UP);
+                        return serviceInstance;
+                    }).collect(Collectors.toList());
+        });
+    }
+
+    @Override
+    public List<URL> getDiscoveryUrls() {
+        return discoveryUrls;
     }
 
     private void createMicroservice() {
@@ -241,16 +266,6 @@ public class RegistryServiceImpl implements RegistryService {
         healthCheck.setTimes(config.getHeartbeatRetryTimes());
         microserviceInstance.setHealthCheck(healthCheck);
         microserviceInstance.setHostName(getHost());
-    }
-
-    private List<String> getEndpoints() {
-        if (serviceCenterRegistry == null) {
-            return Collections.emptyList();
-        }
-        return serviceCenterRegistry.getRegistryUrls().stream()
-                /*.filter(url -> url.getPort() != 0)*/
-                .map(url -> new URL(url.getProtocol(), url.getHost(), url.getPort()).toString()).distinct()
-                .collect(Collectors.toList());
     }
 
     private void createServiceCenterRegistration() {
@@ -376,8 +391,13 @@ public class RegistryServiceImpl implements RegistryService {
     @Subscribe
     public void onInstanceChangedEvent(InstanceChangedEvent event) {
         notify(event.getAppName(), event.getServiceName(), event.getInstances());
+        notifyListener(event);
+    }
+
+    private void notifyListener(InstanceChangedEvent event) {
+        String serviceName = event.getServiceName();
+        ServiceInstancesChangedListener listener = LISTENER_MAP.get(serviceName);
         if (listener != null) {
-            String serviceName = event.getServiceName();
             List<ServiceInstance> serviceInstances = event.getInstances().stream().map(instance -> {
                 URL url = URL.valueOf(instance.getEndpoints().get(0));
                 DefaultServiceInstance serviceInstance = new DefaultServiceInstance(instance.getServiceName(),
@@ -389,7 +409,6 @@ public class RegistryServiceImpl implements RegistryService {
             }).collect(Collectors.toList());
             listener.onEvent(new ServiceInstancesChangedEvent(serviceName, serviceInstances));
         }
-
     }
 
     private void notify(String appId, String serviceName, List<MicroserviceInstance> instances) {
@@ -422,9 +441,6 @@ public class RegistryServiceImpl implements RegistryService {
                 return;
             }
             schemaInfos.forEach(schema -> {
-                if (schema.getSchema() == null) {
-                    return;
-                }
                 URL newUrl = URL.valueOf(schema.getSchema());
                 if (!newUrl.getProtocol().equals(url.getProtocol())) {
                     return;

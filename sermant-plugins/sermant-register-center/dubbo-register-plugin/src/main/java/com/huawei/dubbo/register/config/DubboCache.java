@@ -31,9 +31,9 @@ public enum DubboCache {
     private String serviceName;
 
     /**
-     * 注册地址
+     * 服务地址
      */
-//    private String address;
+    private String address;
 
     private DubboConfig dubboConfig;
 
@@ -50,13 +50,13 @@ public enum DubboCache {
         this.serviceName = serviceName;
     }
 
-//    public String getAddress() {
-//        return address;
-//    }
-//
-//    public void setAddress(String address) {
-//        this.address = address;
-//    }
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public DubboConfig getDubboConfig() {
         return dubboConfig;

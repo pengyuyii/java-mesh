@@ -16,7 +16,7 @@
 
 package com.huawei.dubbo.register;
 
-import com.huawei.dubbo.register.service.DiscoveryService;
+import com.huawei.dubbo.register.config.DubboCache;
 import com.huawei.dubbo.register.service.RegistryService;
 import com.huawei.sermant.core.service.ServiceManager;
 
@@ -35,25 +35,27 @@ import java.util.Set;
 public class ServiceCenterServiceDiscovery extends AbstractServiceDiscovery {
     private URL registryUrl;
 
-    private final DiscoveryService discoveryService;
+//    private final DiscoveryService discoveryService;
 
     private final RegistryService registryService;
 
     public ServiceCenterServiceDiscovery() {
-        discoveryService = ServiceManager.getService(DiscoveryService.class);
+//        discoveryService = ServiceManager.getService(DiscoveryService.class);
         registryService = ServiceManager.getService(RegistryService.class);
     }
 
     @Override
     public void doInitialize(URL registryUrl) throws Exception {
         this.registryUrl = registryUrl;
-        discoveryService.init(registryUrl);
+//        discoveryService.init(registryUrl);
         registryService.init(registryUrl);
     }
 
     @Override
     public void doRegister(ServiceInstance serviceInstance) throws RuntimeException {
-        discoveryService.doRegister(serviceInstance);
+//        discoveryService.doRegister(serviceInstance);
+        registryService.getDiscoveryUrls().replaceAll(url -> url = url.setAddress(serviceInstance.getAddress()));
+        DubboCache.INSTANCE.setAddress(serviceInstance.getAddress());
     }
 
     @Override
@@ -65,12 +67,12 @@ public class ServiceCenterServiceDiscovery extends AbstractServiceDiscovery {
 
     @Override
     public void doUnregister(ServiceInstance serviceInstance) {
-        discoveryService.doUnregister();
+//        discoveryService.doUnregister();
     }
 
     @Override
     public void doDestroy() throws Exception {
-        discoveryService.doDestroy();
+//        discoveryService.doDestroy();
     }
 
     @Override
@@ -86,7 +88,6 @@ public class ServiceCenterServiceDiscovery extends AbstractServiceDiscovery {
     @Override
     public void addServiceInstancesChangedListener(ServiceInstancesChangedListener listener)
             throws NullPointerException, IllegalArgumentException {
-//        discoveryService.addServiceInstancesChangedListener(listener);
         registryService.addServiceInstancesChangedListener(listener, registryUrl);
     }
 

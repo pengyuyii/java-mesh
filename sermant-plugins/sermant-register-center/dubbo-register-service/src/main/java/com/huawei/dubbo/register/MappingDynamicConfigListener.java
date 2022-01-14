@@ -16,7 +16,6 @@
 
 package com.huawei.dubbo.register;
 
-import com.huawei.sermant.core.lubanops.bootstrap.log.LogFactory;
 import com.huawei.sermant.core.service.dynamicconfig.common.DynamicConfigEvent;
 import com.huawei.sermant.core.service.dynamicconfig.common.DynamicConfigEventType;
 import com.huawei.sermant.core.service.dynamicconfig.common.DynamicConfigListener;
@@ -29,15 +28,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 /**
  * @author provenceee
  * @date 2022/1/10
  */
 public class MappingDynamicConfigListener implements DynamicConfigListener {
-    private static final Logger LOGGER = LogFactory.getLogger();
-
     private final Map<String, Set<MappingListener>> listeners;
 
     public MappingDynamicConfigListener() {
