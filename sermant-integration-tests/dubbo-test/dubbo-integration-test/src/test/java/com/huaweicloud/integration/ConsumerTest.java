@@ -16,6 +16,8 @@
 
 package com.huaweicloud.integration;
 
+import com.alibaba.fastjson.JSONObject;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.web.client.HttpServerErrorException;
@@ -73,9 +75,20 @@ public class ConsumerTest {
     }
 
     /**
-     * 测试多注册中心
+     * 测试tag标签路由
      */
     @Test
+    public void test() {
+        String json = REST_TEMPLATE.getForObject(BASE_URL + "test?id=1000", String.class);
+        com.huaweicloud.integration.domain.Test test = JSONObject
+            .parseObject(json, com.huaweicloud.integration.domain.Test.class);
+        Assertions.assertEquals(1000, test.getId());
+    }
+
+    /**
+     * 测试多注册中心
+     */
+    //    @Test
     public void testMultipleRegistry() {
         // 因为多注册中心是随机选择一个注册中心的节点进行访问，所以这里访问100次，这个用例失败并不一定真的失败，需要详细分析
         Set<String> set = new HashSet<>();

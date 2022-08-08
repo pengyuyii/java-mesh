@@ -350,16 +350,19 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     private Map<String, String> getProperties() {
+        // 接口的协议缓存（适配多协议接口）
+        Map<String, Set<String>> protocolCache = new ConcurrentHashMap<>();
+
         // 把registryUrls按接口名进行分组，组装成InterfaceData，并聚合到HashSet（去重）里面
         Map<String, Set<InterfaceData>> map = registryUrls.stream().collect(Collectors.groupingBy(this::getInterface,
-            Collectors.mapping(this::getInterfaceDate, Collectors.toCollection(HashSet::new))));
+            Collectors.mapping(url -> getInterfaceData(url, protocolCache), Collectors.toCollection(HashSet::new))));
 
         // key不变，value转化成json字符串
         return map.entrySet().stream().collect(Collectors.toMap(Entry::getKey,
             entry -> JSONArray.toJSONString(entry.getValue()), (k1, k2) -> k1));
     }
 
-    private InterfaceData getInterfaceDate(Object url) {
+    private InterfaceData getInterfaceData(Object url, Map<String, Set<String>> protocolCache) {
         Map<String, String> parameters = ReflectUtils.getParameters(url);
         Integer order = null;
         String path = ReflectUtils.getPath(url);
@@ -378,8 +381,11 @@ public class RegistryServiceImpl implements RegistryService {
                 map.put(key, parameters.get(key));
             }
         });
-        return new InterfaceData(parameters.get(GROUP_KEY), parameters.get(VERSION_KEY),
+        protocolCache.computeIfAbsent(interfaceName, value -> new HashSet<>()).add(ReflectUtils.getProtocol(url));
+        InterfaceData interfaceData = new InterfaceData(parameters.get(GROUP_KEY), parameters.get(VERSION_KEY),
             parameters.get(SERVICE_NAME_KEY), order, map);
+        interfaceData.setProtocol(protocolCache.get(interfaceName));
+        return interfaceData;
     }
 
     private String getUrl(Object url) {
@@ -420,8 +426,9 @@ public class RegistryServiceImpl implements RegistryService {
         // schema是以接口名为维度的，ignoreKeys中的参数主要跟实现相关，所以这里去掉
         // ignoreKeys中的参数会存在实例的properties中
         // 2.6.x, 2.7.0-2.7.7在多实现的场景下，路径名会在接口名后拼一个序号，所以这里把路径名统一设置为接口名
-        String schema = ReflectUtils.setPath(ReflectUtils.removeParameters(newUrl, ignoreKeys), interfaceName)
+        String newUrlString = ReflectUtils.setPath(ReflectUtils.removeParameters(newUrl, ignoreKeys), interfaceName)
             .toString();
+        String schema = newUrlString.substring(newUrlString.indexOf(microservice.getServiceName()));
         return Optional.of(new SchemaInfo(interfaceName, schema, DigestUtils.sha256Hex(schema)));
     }
 
@@ -564,11 +571,9 @@ public class RegistryServiceImpl implements RegistryService {
                     value -> new ArrayList<>()).add(url);
                 return;
             }
+            String protocol = ReflectUtils.getProtocol(url);
             schemaInfos.forEach(schema -> {
                 Object newUrl = ReflectUtils.valueOf(schema.getSchema());
-                if (!Objects.equals(ReflectUtils.getProtocol(newUrl), ReflectUtils.getProtocol(url))) {
-                    return;
-                }
 
                 // 获取对应接口的所有实现的信息，并组装成InterfaceKey
                 String json = properties.get(schema.getSchemaId());
@@ -579,6 +584,10 @@ public class RegistryServiceImpl implements RegistryService {
 
                 // 遍历所有的接口实现
                 list.forEach(interfaceData -> {
+                    if (!CollectionUtils.isEmpty(interfaceData.getProtocol())
+                        && !interfaceData.getProtocol().contains(protocol)) {
+                        return;
+                    }
                     Map<String, String> parameters = new HashMap<>();
                     String group = interfaceData.getGroup();
                     if (StringUtils.isExist(group)) {
@@ -600,7 +609,7 @@ public class RegistryServiceImpl implements RegistryService {
                     // 组装所有接口实现的访问地址列表
                     urlMap.computeIfAbsent(getSubscriptionKey(appId, serviceName, newUrl, interfaceData),
                         value -> new ArrayList<>())
-                        .add(getUrlOnNotifying(newUrl, url, parameters, interfaceData.getOrder()));
+                        .add(getUrlOnNotifying(newUrl, url, parameters, interfaceData.getOrder(), protocol));
                 });
             });
         });
@@ -619,9 +628,9 @@ public class RegistryServiceImpl implements RegistryService {
     }
 
     private Object getUrlOnNotifying(Object schemaUrl, Object addressUrl, Map<String, String> parameters,
-        Integer order) {
-        Object url = ReflectUtils.setAddress(ReflectUtils.addParameters(schemaUrl, parameters),
-            ReflectUtils.getAddress(addressUrl));
+        Integer order, String protocol) {
+        Object url = ReflectUtils.setProtocol(ReflectUtils.setAddress(ReflectUtils.addParameters(schemaUrl, parameters),
+            ReflectUtils.getAddress(addressUrl)), protocol);
         if (order == null) {
             return url;
         }

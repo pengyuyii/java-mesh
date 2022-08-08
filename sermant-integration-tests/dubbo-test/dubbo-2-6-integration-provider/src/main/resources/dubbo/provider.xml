@@ -15,6 +15,7 @@
     <dubbo:registry address="zookeeper://127.0.0.1:2181" protocol="zookeeper"/>
 
     <dubbo:protocol name="dubbo" port="${dubbo.protocol.port}"/>
+    <!--<dubbo:protocol name="rest" port="28830"/>-->
 
     <bean id="barServiceImpl" class="com.huaweicloud.integration.service.BarServiceImpl"/>
     <dubbo:service interface="com.huaweicloud.integration.service.BarService" ref="barServiceImpl"/>

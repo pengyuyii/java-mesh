@@ -12,35 +12,7 @@
 
 ## 使用方式:
 
-目前插件端的实例列表基于servicecomb，所以宿主应用需要引入如下依赖：
-
-### Spring Cloud
-
-```xml
-
-<dependency>
-    <groupId>com.huaweicloud</groupId>
-    <artifactId>spring-cloud-starter-huawei-servicecomb-discovery</artifactId>
-    <version>${version}</version>
-</dependency>
-```
-
-- 具体使用方法可参考[Spring Cloud Huawei](https://github.com/huaweicloud/spring-cloud-huawei)
-
-### Dubbo
-
-```xml
-
-<dependency>
-    <groupId>com.huaweicloud.dubbo-servicecomb</groupId>
-    <artifactId>dubbo-servicecomb-service-center</artifactId>
-    <version>${version}</version>
-</dependency>
-```
-
-- 具体使用方法可参考[Dubbo-Serivcecomb](https://github.com/huaweicloud/dubbo-servicecomb)
-
-然后需要到配置中心配置如下灰度规则：
+需要到配置中心配置如下灰度规则：
 
 ### 配置中心新增配置方式如下：
 
@@ -64,7 +36,7 @@ POST /publishConfig
 servicecomb:
   routeRule:
     dubbo-b: |# 服务名
-      - precedence: 1 # 优先级，优先级数量越大优先级越高
+      - precedence: 1 # 优先级，值越大优先级越高
         match: # 匹配策略
           source: dubbo-a # 匹配服务名，非必填
           path: com.huawei.dubbotest.service.BTest.testObject # dubbo接口全路径/或者url路径
@@ -82,7 +54,7 @@ servicecomb:
                 exact: test # test
         route:
           - tags:
-              version: 1.0.2 # 匹配的版本，即dubbo.servicecomb.service.version或spring.cloud.servicecomb.discovery.version配置的版本号
+              version: 1.0.1 # 匹配的版本，即dubbo.servicecomb.service.version或spring.cloud.servicecomb.discovery.version配置的版本号
             weight: 100 # 权重值，如果低于100，则有可能会转发流量到其它版本
 ```
 

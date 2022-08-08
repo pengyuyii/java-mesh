@@ -29,10 +29,16 @@ import java.util.Objects;
  */
 public class InterfaceKey {
     @JSONField(serialzeFeatures = SerializerFeature.WriteMapNullValue)
-    private final String group;
+    private String group;
 
     @JSONField(serialzeFeatures = SerializerFeature.WriteMapNullValue)
-    private final String version;
+    private String version;
+
+    /**
+     * 构造方法
+     */
+    public InterfaceKey() {
+    }
 
     /**
      * 构造方法
@@ -49,8 +55,16 @@ public class InterfaceKey {
         return group;
     }
 
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
     public String getVersion() {
         return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 
     @Override

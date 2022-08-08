@@ -142,6 +142,18 @@ public class DubboReflectUtils {
     }
 
     /**
+     * 获取服务接口名
+     *
+     * @param obj url
+     * @return 服务接口名
+     * @see com.alibaba.dubbo.common.URL
+     * @see org.apache.dubbo.common.URL
+     */
+    public static String getServiceKey(Object obj) {
+        return ReflectUtils.invokeWithNoneParameterAndReturnString(obj, "getServiceKey");
+    }
+
+    /**
      * 获取dubbo请求方法名
      *
      * @param obj invocation

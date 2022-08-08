@@ -16,6 +16,7 @@
 
 package com.huaweicloud.integration.controller;
 
+import com.huaweicloud.integration.domain.Test;
 import com.huaweicloud.integration.service.FooService;
 
 import com.alibaba.dubbo.rpc.RpcContext;
@@ -95,5 +96,18 @@ public class ConsumerFooController {
     public String getRegistryProtocol() {
         RpcContext.getContext().setAttachment(TAG_KEY, TAG);
         return fooService.getRegistryProtocol();
+    }
+
+    /**
+     * 获取注册协议
+     *
+     * @param id id
+     * @return 注册协议
+     */
+    @GetMapping("/test")
+    public Test test(@RequestParam long id) {
+        Test test = new Test();
+        test.setId(id);
+        return fooService.test(test);
     }
 }

@@ -16,6 +16,8 @@
 
 package com.huaweicloud.integration.service;
 
+import com.huaweicloud.integration.domain.Test;
+
 import com.alibaba.dubbo.config.RegistryConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,5 +45,10 @@ public class FooServiceImpl implements FooService {
     @Override
     public String getRegistryProtocol() {
         return registryConfig.getProtocol();
+    }
+
+    @Override
+    public Test test(Test test) {
+        return test;
     }
 }

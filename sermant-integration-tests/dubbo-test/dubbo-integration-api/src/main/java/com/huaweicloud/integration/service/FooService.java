@@ -16,6 +16,8 @@
 
 package com.huaweicloud.integration.service;
 
+import com.huaweicloud.integration.domain.Test;
+
 /**
  * 测试接口
  *
@@ -23,6 +25,8 @@ package com.huaweicloud.integration.service;
  * @since 2022-04-27
  */
 public interface FooService {
+    Test test(Test test);
+
     /**
      * 测试接口
      *
