@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.huaweicloud.sermant.router.dubbo.interceptor;
+package com.huawei.dubbo.registry.interceptor;
+
+import com.huawei.dubbo.registry.utils.AnnotationUtil;
+import com.huawei.dubbo.registry.utils.ReflectUtils;
 
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
-import com.huaweicloud.sermant.core.utils.ReflectUtils;
-import com.huaweicloud.sermant.router.dubbo.utils.AnnotationUtil;
-import com.huaweicloud.sermant.router.dubbo.utils.DubboReflectUtils;
 
 import com.alibaba.dubbo.rpc.StaticContext;
 
@@ -47,7 +47,7 @@ public class RestInterceptor extends AbstractInterceptor {
     public ExecuteContext before(ExecuteContext context) {
         Class<?> clazz =
             (Class<?>) StaticContext.getContext("service.classimpl")
-                .get(DubboReflectUtils.getServiceKey(context.getArguments()[2]));
+                .get(ReflectUtils.getServiceKey(context.getArguments()[2]));
         Map<String, Object> map = new HashMap<>();
         map.put("value", clazz.getSimpleName());
         Path path = AnnotationUtil.createAnnotationFromMap(Path.class, map);
@@ -63,7 +63,7 @@ public class RestInterceptor extends AbstractInterceptor {
         Produces produces = AnnotationUtil.createAnnotationFromMap(Produces.class, map3);
         AnnotationUtil.addAnnotation(clazz, produces);
 
-        Method[] methods = (Method[]) ReflectUtils
+        Method[] methods = (Method[]) com.huaweicloud.sermant.core.utils.ReflectUtils
             .invokeMethod(clazz, "privateGetDeclaredMethods", new Class[]{boolean.class}, new Object[]{true})
             .orElse(null);
         if (methods == null) {

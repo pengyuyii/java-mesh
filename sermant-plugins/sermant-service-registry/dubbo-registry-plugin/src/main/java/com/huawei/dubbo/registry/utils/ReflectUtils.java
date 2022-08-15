@@ -208,6 +208,18 @@ public class ReflectUtils {
     }
 
     /**
+     * 获取服务接口名
+     *
+     * @param obj url
+     * @return 服务接口名
+     * @see com.alibaba.dubbo.common.URL
+     * @see org.apache.dubbo.common.URL
+     */
+    public static String getServiceKey(Object obj) {
+        return ReflectUtils.invokeWithNoneParameterAndReturnString(obj, "getServiceKey");
+    }
+
+    /**
      * 判断注册信息是否有效
      *
      * @param obj RegistryConfig

@@ -7,6 +7,6 @@ com.huaweicloud.sermant.router.dubbo.declarer.ApplicationConfigDeclarer
 com.huaweicloud.sermant.router.dubbo.declarer.ClusterDefinition
 com.huaweicloud.sermant.router.dubbo.declarer.RegistrationDeclarer
 com.huaweicloud.sermant.router.dubbo.declarer.SpringBootDeclarer
-com.huaweicloud.sermant.router.dubbo.declarer.RestDefinition
+#com.huaweicloud.sermant.router.dubbo.declarer.RestDefinition
 #com.huaweicloud.sermant.router.dubbo.declarer.ProtocolConfigDefinition
-com.huaweicloud.sermant.router.dubbo.declarer.AbstractServiceConfigDefinition
+#com.huaweicloud.sermant.router.dubbo.declarer.AbstractServiceConfigDefinition
