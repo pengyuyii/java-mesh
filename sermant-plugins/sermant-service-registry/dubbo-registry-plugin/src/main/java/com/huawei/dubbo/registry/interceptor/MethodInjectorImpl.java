@@ -16,8 +16,11 @@
 
 package com.huawei.dubbo.registry.interceptor;
 
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
+
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
+import org.jboss.resteasy.core.MessageBodyParameterInjector;
 import org.jboss.resteasy.resteasy_jaxrs.i18n.Messages;
 import org.jboss.resteasy.spi.BadRequestException;
 import org.jboss.resteasy.spi.Failure;
@@ -27,6 +30,7 @@ import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.spi.metadata.ResourceLocator;
 
 import java.util.List;
+import java.util.Optional;
 
 import javax.ws.rs.WebApplicationException;
 
@@ -59,8 +63,13 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
             });
             if (this.params != null && this.params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
-                    //                    mapper.readValue(list.get(i),params[i].)
-                    args[i] = list.get(0);
+                    if (!(params[i] instanceof MessageBodyParameterInjector)) {
+                        continue;
+                    }
+                    Optional<Object> type = ReflectUtils.getFieldValue(params[i], "type");
+                    if (type.isPresent()) {
+                        args[i] = mapper.readValue(list.get(i), (Class<?>) type.get());
+                    }
                 }
             }
             return args;
