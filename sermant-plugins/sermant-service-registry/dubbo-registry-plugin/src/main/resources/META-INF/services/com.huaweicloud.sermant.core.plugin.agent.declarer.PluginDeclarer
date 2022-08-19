@@ -7,5 +7,6 @@ com.huawei.dubbo.registry.declarer.MigrationRuleHandlerDeclarer
 com.huawei.dubbo.registry.declarer.RegistryConfigDeclarer
 com.huawei.dubbo.registry.declarer.RegistryProtocolDeclarer
 com.huawei.dubbo.registry.declarer.SpringBootDeclarer
-com.huawei.dubbo.registry.declarer.AbstractServiceConfigDefinition
-com.huawei.dubbo.registry.declarer.RestDefinition
+com.huawei.dubbo.registry.declarer.AbstractServiceConfigDeclarer
+com.huawei.dubbo.registry.declarer.RestDeclarer
+#com.huawei.dubbo.registry.declarer.InjectorFactoryImplDeclarer

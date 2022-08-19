@@ -25,7 +25,7 @@ import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
  * @author provenceee
  * @since 2021-06-28
  */
-public class RestDefinition extends AbstractDeclarer {
+public class RestDeclarer extends AbstractDeclarer {
     private static final String[] ENHANCE_CLASS = {"com.alibaba.dubbo.rpc.protocol.rest.RestProtocol"};
 
     private static final String INTERCEPT_CLASS
@@ -36,7 +36,7 @@ public class RestDefinition extends AbstractDeclarer {
     /**
      * 构造方法
      */
-    public RestDefinition() {
+    public RestDeclarer() {
         super(ENHANCE_CLASS);
     }
 

@@ -33,7 +33,7 @@ public class FooServiceImpl implements FooService {
     private RegistryConfig registryConfig;
 
     @Override
-    public String foo(String str) {
+    public String foo(String str, int id) {
         return "foo:" + str;
     }
 

@@ -25,7 +25,7 @@ import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
  * @author provenceee
  * @since 2021-06-28
  */
-public class AbstractServiceConfigDefinition extends AbstractDeclarer {
+public class AbstractServiceConfigDeclarer extends AbstractDeclarer {
     private static final String[] ENHANCE_CLASS = {"com.alibaba.dubbo.config.AbstractServiceConfig"};
 
     private static final String INTERCEPT_CLASS
@@ -36,7 +36,7 @@ public class AbstractServiceConfigDefinition extends AbstractDeclarer {
     /**
      * 构造方法
      */
-    public AbstractServiceConfigDefinition() {
+    public AbstractServiceConfigDeclarer() {
         super(ENHANCE_CLASS);
     }
 

@@ -33,7 +33,7 @@ public interface FooService {
      * @param str 参数
      * @return 测试信息
      */
-    String foo(String str);
+    String foo(String str, int id);
 
     /**
      * 测试接口
