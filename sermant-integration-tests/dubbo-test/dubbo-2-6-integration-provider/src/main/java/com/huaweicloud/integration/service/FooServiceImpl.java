@@ -16,7 +16,7 @@
 
 package com.huaweicloud.integration.service;
 
-import com.huaweicloud.integration.domain.Test;
+import com.huaweicloud.integration.domain.User;
 
 import com.alibaba.dubbo.config.RegistryConfig;
 
@@ -33,13 +33,13 @@ public class FooServiceImpl implements FooService {
     private RegistryConfig registryConfig;
 
     @Override
-    public String foo(String str, int id) {
-        return "foo:" + str;
+    public String getUserNameByNameAndId(String name, int id) {
+        return "foo:" + name;
     }
 
     @Override
-    public String foo2(String str) {
-        return "foo2:" + str;
+    public String getUserNameByName(String name) {
+        return "foo2:" + name;
     }
 
     @Override
@@ -48,7 +48,7 @@ public class FooServiceImpl implements FooService {
     }
 
     @Override
-    public Test test(Test test, Test test1) {
-        return test;
+    public User getUser(User user, User user1) {
+        return user;
     }
 }

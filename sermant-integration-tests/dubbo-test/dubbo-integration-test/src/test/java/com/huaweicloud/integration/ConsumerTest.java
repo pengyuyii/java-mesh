@@ -16,6 +16,8 @@
 
 package com.huaweicloud.integration;
 
+import com.huaweicloud.integration.domain.User;
+
 import com.alibaba.fastjson.JSONObject;
 
 import org.junit.jupiter.api.Assertions;
@@ -80,9 +82,9 @@ public class ConsumerTest {
     @Test
     public void test() {
         String json = REST_TEMPLATE.getForObject(BASE_URL + "test?id=1000", String.class);
-        com.huaweicloud.integration.domain.Test test = JSONObject
-            .parseObject(json, com.huaweicloud.integration.domain.Test.class);
-        Assertions.assertEquals(1000, test.getId());
+        User user = JSONObject
+            .parseObject(json, User.class);
+        Assertions.assertEquals(1000, user.getId());
     }
 
     /**

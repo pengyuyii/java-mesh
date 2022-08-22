@@ -39,6 +39,7 @@ import java.util.Optional;
 
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyReader;
 
 /**
@@ -50,8 +51,6 @@ import javax.ws.rs.ext.MessageBodyReader;
 public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorImpl {
     private final ObjectMapper mapper;
 
-    //    private final ResteasyProviderFactory factory;
-
     /**
      * 构造方法
      *
@@ -61,11 +60,15 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
     public MethodInjectorImpl(ResourceLocator resourceMethod, ResteasyProviderFactory factory) {
         super(resourceMethod, factory);
         mapper = new ObjectMapper();
-        //        this.factory = factory;
     }
 
     @Override
     public Object[] injectArguments(HttpRequest input, HttpResponse response) {
+        MediaType mediaType = input.getHttpHeaders().getMediaType();
+        if (mediaType == null) {
+            mediaType = MediaType.WILDCARD_TYPE;
+        }
+        MultivaluedMap<String, String> headers = input.getHttpHeaders().getRequestHeaders();
         try {
             Object[] args = new Object[this.params.length];
             List<Object> list = mapper.readValue(input.getInputStream(), new TypeReference<List<Object>>() {
@@ -78,8 +81,8 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
                     Optional<Object> type = ReflectUtils.getFieldValue(params[i], "type");
                     Optional<Object> genericType = ReflectUtils.getFieldValue(params[i], "genericType");
                     if (type.isPresent() && genericType.isPresent()) {
-                        MessageBodyReader<Object> reader = factory
-                            .getServerMessageBodyReader((Class<Object>) type.get(),
+                        MessageBodyReader<?> reader = factory
+                            .getServerMessageBodyReader((Class<?>) type.get(),
                                 (Type) genericType.get(), new Annotation[0], MediaType.APPLICATION_JSON_TYPE);
                         String str;
                         if (reader instanceof JacksonJsonProvider) {
@@ -87,14 +90,10 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
                         } else {
                             str = String.valueOf(list.get(i));
                         }
-                        Object o = reader.readFrom((Class<Object>) type.get(),
-                            (Type) genericType.get(), new Annotation[0], MediaType.APPLICATION_JSON_TYPE,
-                            null,
+                        Object obj = reader.readFrom((Class) type.get(), (Type) genericType.get(),
+                            new Annotation[0], mediaType, headers,
                             new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
-                        args[i] = o;
-                        //                        JsonParser jp = mapper.getJsonFactory().createJsonParser(list.get(i));
-                        //                        jp.disable(org.codehaus.jackson.JsonParser.Feature.AUTO_CLOSE_SOURCE);
-                        //                        args[i] = mapper.readValue(jp, mapper.constructType((Class<?>) type.get()));
+                        args[i] = obj;
                     }
                 }
             }

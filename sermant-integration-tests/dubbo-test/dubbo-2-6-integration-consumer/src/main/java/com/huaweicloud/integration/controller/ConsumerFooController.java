@@ -16,7 +16,7 @@
 
 package com.huaweicloud.integration.controller;
 
-import com.huaweicloud.integration.domain.Test;
+import com.huaweicloud.integration.domain.User;
 import com.huaweicloud.integration.service.FooService;
 
 import com.alibaba.dubbo.rpc.RpcContext;
@@ -55,7 +55,7 @@ public class ConsumerFooController {
     @GetMapping("/testFoo")
     public String testFoo(@RequestParam String str) {
         RpcContext.getContext().setAttachment(TAG_KEY, TAG);
-        return fooService.foo(str);
+        return fooService.getUserNameByNameAndId(str, 1);
     }
 
     /**
@@ -67,7 +67,7 @@ public class ConsumerFooController {
     @GetMapping("/testFoo2")
     public String testFoo2(@RequestParam String str) {
         RpcContext.getContext().setAttachment(TAG_KEY, TAG);
-        return fooService.foo2(str);
+        return fooService.getUserNameByName(str);
     }
 
     /**
@@ -84,7 +84,7 @@ public class ConsumerFooController {
             throw new HttpServerErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         RpcContext.getContext().setAttachment(TAG_KEY, tag);
-        return fooService.foo2(tag);
+        return fooService.getUserNameByName(tag);
     }
 
     /**
@@ -105,9 +105,11 @@ public class ConsumerFooController {
      * @return 注册协议
      */
     @GetMapping("/test")
-    public Test test(@RequestParam long id) {
-        Test test = new Test();
-        test.setId(id);
-        return fooService.test(test);
+    public User test(@RequestParam long id) {
+        User user = new User();
+        user.setId(id);
+        User user1 = new User();
+        user1.setId(id + 1);
+        return fooService.getUser(user, user1);
     }
 }

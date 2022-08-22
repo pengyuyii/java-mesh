@@ -12,7 +12,7 @@ import java.io.Serializable;
  * @author pengyuyi
  * @since 2021-10-18
  */
-public class Test implements Serializable {
+public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
     private long id;

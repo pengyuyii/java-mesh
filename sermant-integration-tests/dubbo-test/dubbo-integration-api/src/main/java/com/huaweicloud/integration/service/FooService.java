@@ -16,7 +16,7 @@
 
 package com.huaweicloud.integration.service;
 
-import com.huaweicloud.integration.domain.Test;
+import com.huaweicloud.integration.domain.User;
 
 /**
  * 测试接口
@@ -25,23 +25,23 @@ import com.huaweicloud.integration.domain.Test;
  * @since 2022-04-27
  */
 public interface FooService {
-    Test test(Test test, Test test1);
+    User getUser(User user, User user1);
 
     /**
      * 测试接口
      *
-     * @param str 参数
+     * @param name 参数
      * @return 测试信息
      */
-    String foo(String str, int id);
+    String getUserNameByNameAndId(String name, int id);
 
     /**
      * 测试接口
      *
-     * @param str 参数
+     * @param name 参数
      * @return 测试信息
      */
-    String foo2(String str);
+    String getUserNameByName(String name);
 
     /**
      * 获取注册协议
