@@ -18,6 +18,7 @@ package com.huawei.dubbo.registry.interceptor;
 
 import com.huaweicloud.sermant.core.utils.ReflectUtils;
 
+import org.codehaus.jackson.jaxrs.JacksonJsonProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.type.TypeReference;
 import org.jboss.resteasy.core.MessageBodyParameterInjector;
@@ -29,10 +30,16 @@ import org.jboss.resteasy.spi.HttpResponse;
 import org.jboss.resteasy.spi.ResteasyProviderFactory;
 import org.jboss.resteasy.spi.metadata.ResourceLocator;
 
+import java.io.ByteArrayInputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.ext.MessageBodyReader;
 
 /**
  * resteasy反序列化器
@@ -41,8 +48,9 @@ import javax.ws.rs.WebApplicationException;
  * @since 2022-08-18
  */
 public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorImpl {
-
     private final ObjectMapper mapper;
+
+    //    private final ResteasyProviderFactory factory;
 
     /**
      * 构造方法
@@ -53,13 +61,14 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
     public MethodInjectorImpl(ResourceLocator resourceMethod, ResteasyProviderFactory factory) {
         super(resourceMethod, factory);
         mapper = new ObjectMapper();
+        //        this.factory = factory;
     }
 
     @Override
     public Object[] injectArguments(HttpRequest input, HttpResponse response) {
         try {
             Object[] args = new Object[this.params.length];
-            List<String> list = mapper.readValue(input.getInputStream(), new TypeReference<List<String>>() {
+            List<Object> list = mapper.readValue(input.getInputStream(), new TypeReference<List<Object>>() {
             });
             if (this.params != null && this.params.length > 0) {
                 for (int i = 0; i < params.length; i++) {
@@ -67,8 +76,25 @@ public class MethodInjectorImpl extends org.jboss.resteasy.core.MethodInjectorIm
                         continue;
                     }
                     Optional<Object> type = ReflectUtils.getFieldValue(params[i], "type");
-                    if (type.isPresent()) {
-                        args[i] = mapper.readValue(list.get(i), (Class<?>) type.get());
+                    Optional<Object> genericType = ReflectUtils.getFieldValue(params[i], "genericType");
+                    if (type.isPresent() && genericType.isPresent()) {
+                        MessageBodyReader<Object> reader = factory
+                            .getServerMessageBodyReader((Class<Object>) type.get(),
+                                (Type) genericType.get(), new Annotation[0], MediaType.APPLICATION_JSON_TYPE);
+                        String str;
+                        if (reader instanceof JacksonJsonProvider) {
+                            str = mapper.writeValueAsString(list.get(i));
+                        } else {
+                            str = String.valueOf(list.get(i));
+                        }
+                        Object o = reader.readFrom((Class<Object>) type.get(),
+                            (Type) genericType.get(), new Annotation[0], MediaType.APPLICATION_JSON_TYPE,
+                            null,
+                            new ByteArrayInputStream(str.getBytes(StandardCharsets.UTF_8)));
+                        args[i] = o;
+                        //                        JsonParser jp = mapper.getJsonFactory().createJsonParser(list.get(i));
+                        //                        jp.disable(org.codehaus.jackson.JsonParser.Feature.AUTO_CLOSE_SOURCE);
+                        //                        args[i] = mapper.readValue(jp, mapper.constructType((Class<?>) type.get()));
                     }
                 }
             }

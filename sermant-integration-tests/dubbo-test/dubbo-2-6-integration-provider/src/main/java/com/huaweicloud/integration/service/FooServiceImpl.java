@@ -48,7 +48,7 @@ public class FooServiceImpl implements FooService {
     }
 
     @Override
-    public Test test(Test test) {
+    public Test test(Test test, Test test1) {
         return test;
     }
 }

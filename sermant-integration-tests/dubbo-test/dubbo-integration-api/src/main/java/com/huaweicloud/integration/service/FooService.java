@@ -25,7 +25,7 @@ import com.huaweicloud.integration.domain.Test;
  * @since 2022-04-27
  */
 public interface FooService {
-    Test test(Test test);
+    Test test(Test test, Test test1);
 
     /**
      * 测试接口
