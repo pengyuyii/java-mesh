@@ -26,6 +26,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 
 /**
  * 启动类
@@ -36,6 +37,8 @@ import org.springframework.context.annotation.ImportResource;
 @SpringBootApplication
 @ImportResource({"classpath:dubbo/provider.xml"})
 @ComponentScan(excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = ConsumerController.class))
+@PropertySource(value = "${registry.config:classpath:registry.properties}", ignoreResourceNotFound = true,
+    encoding = "UTF-8")
 public class ProviderApplication {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderApplication.class);
 

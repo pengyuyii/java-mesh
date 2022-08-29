@@ -26,7 +26,16 @@ import com.huaweicloud.sermant.core.plugin.service.PluginService;
  */
 public interface RegistryConfigService extends PluginService {
     /**
-     * 增加注册中心配置以注册到sc
+     * 增加注册中心配置以注册到sc（多注册）
+     *
+     * @param obj 增强的类
+     * @see com.alibaba.dubbo.config.AbstractInterfaceConfig
+     * @see org.apache.dubbo.config.AbstractInterfaceConfig
+     */
+    void addRegistryConfigs(Object obj);
+
+    /**
+     * 增加默认注册中心配置以注册到sc（单注册）
      *
      * @param obj 增强的类
      * @see com.alibaba.dubbo.config.AbstractInterfaceConfig

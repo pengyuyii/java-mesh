@@ -35,6 +35,12 @@ import java.util.Optional;
 public class RegistryConfigServiceImpl implements RegistryConfigService {
     private static final String DUBBO_REGISTRIES_CONFIG_PREFIX = "dubbo.registries.";
 
+    private static final String APACHE_REGISTRY_CONFIG_CLASS_NAME = "org.apache.dubbo.config.RegistryConfig";
+
+    private static final String ALIBABA_REGISTRY_CONFIG_CLASS_NAME = "com.alibaba.dubbo.config.RegistryConfig";
+
+    private static final String APACHE_DUBBO_CLASS_NAME_PREFIX = "org.apache.dubbo.config.";
+
     private final RegisterConfig config;
 
     /**
@@ -52,7 +58,7 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
      * @see org.apache.dubbo.config.AbstractInterfaceConfig
      */
     @Override
-    public void addRegistryConfig(Object obj) {
+    public void addRegistryConfigs(Object obj) {
         if (!config.isOpenMigration() || !config.isEnableDubboRegister()) {
             return;
         }
@@ -68,6 +74,29 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
         ReflectUtils.setId(registryConfig.get(), Constant.SC_REGISTRY_PROTOCOL);
         ReflectUtils.setPrefix(registryConfig.get(), DUBBO_REGISTRIES_CONFIG_PREFIX);
         registries.add(registryConfig.get());
+    }
+
+    @Override
+    public void addRegistryConfig(Object obj) {
+        if (config.isOpenMigration() || !config.isEnableDubboRegister()) {
+            return;
+        }
+        List<Object> registries = ReflectUtils.getRegistries(obj);
+        if (!CollectionUtils.isEmpty(registries)) {
+            return;
+        }
+        Class<?> clazz = getRegistryConfigClass(
+            obj.getClass().getSuperclass().getName().startsWith(APACHE_DUBBO_CLASS_NAME_PREFIX));
+        if (clazz == null) {
+            return;
+        }
+        Optional<?> registryConfig = ReflectUtils.newRegistryConfig(clazz);
+        if (!registryConfig.isPresent()) {
+            return;
+        }
+        ReflectUtils.setId(registryConfig.get(), Constant.SC_REGISTRY_PROTOCOL);
+        ReflectUtils.setPrefix(registryConfig.get(), DUBBO_REGISTRIES_CONFIG_PREFIX);
+        ReflectUtils.setRegistry(obj, registryConfig.get());
     }
 
     private boolean isInValid(List<?> registries) {
@@ -89,5 +118,10 @@ public class RegistryConfigServiceImpl implements RegistryConfigService {
 
         // 如果所有的配置都是无效的，则为无效配置，不注册到sc
         return isInvalid;
+    }
+
+    private Class<?> getRegistryConfigClass(boolean isApache) {
+        String className = isApache ? APACHE_REGISTRY_CONFIG_CLASS_NAME : ALIBABA_REGISTRY_CONFIG_CLASS_NAME;
+        return ReflectUtils.defineClass(className).orElse(null);
     }
 }

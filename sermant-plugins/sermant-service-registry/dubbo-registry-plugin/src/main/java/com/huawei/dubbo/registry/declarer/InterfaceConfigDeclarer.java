@@ -32,7 +32,7 @@ public class InterfaceConfigDeclarer extends AbstractDeclarer {
     private static final String INTERCEPT_CLASS = "com.huawei.dubbo.registry.interceptor.InterfaceConfigInterceptor";
 
     // 增强loadRegistriesFromBackwardConfig方法是为了兼容2.7.0-2.7.4.1，其它版本主要是增强setRegistries方法
-    private static final String[] METHOD_NAME = {"setRegistries", "loadRegistriesFromBackwardConfig"};
+    private static final String[] METHOD_NAME = {"setRegistries", "loadRegistriesFromBackwardConfig", "checkRegistry"};
 
     /**
      * 构造方法

@@ -16,8 +16,9 @@
 
 package com.huaweicloud.integration.service;
 
-import org.apache.dubbo.config.RegistryConfig;
+import org.apache.dubbo.config.spring.ServiceBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  * 测试接口
@@ -27,7 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class FooServiceImpl implements FooService {
     @Autowired
-    private RegistryConfig registryConfig;
+    @Qualifier("com.huaweicloud.integration.service.FooService")
+    private ServiceBean<?> bean;
 
     @Override
     public String foo(String str) {
@@ -41,6 +43,7 @@ public class FooServiceImpl implements FooService {
 
     @Override
     public String getRegistryProtocol() {
-        return registryConfig.getProtocol();
+        String address = bean.getRegistry().getAddress();
+        return address.substring(0, address.indexOf("://"));
     }
 }

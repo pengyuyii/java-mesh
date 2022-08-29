@@ -38,7 +38,7 @@ import org.springframework.web.client.RestTemplate;
  * @since 2022-04-28
  */
 @SpringBootApplication
-@ImportResource({"classpath:dubbo/consumer.xml"})
+@ImportResource("${consumer.config:classpath:dubbo/consumer.xml}")
 @EnableFeignClients(basePackages = "com.huaweicloud.integration.client")
 @ComponentScan(excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = ProviderController.class))
 public class ConsumerApplication {

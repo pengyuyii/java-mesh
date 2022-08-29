@@ -68,26 +68,36 @@ public class RegistryConfigServiceTest {
         // 测试关闭迁移开关与注册开关
         registerConfig.setOpenMigration(false);
         registerConfig.setEnableDubboRegister(false);
+        service.addRegistryConfigs(interfaceConfig);
+        Assert.assertNull(interfaceConfig.getRegistries());
         service.addRegistryConfig(interfaceConfig);
         Assert.assertNull(interfaceConfig.getRegistries());
 
         // 测试开启迁移开关，关闭注册开关
         registerConfig.setOpenMigration(true);
         registerConfig.setEnableDubboRegister(false);
+        service.addRegistryConfigs(interfaceConfig);
+        Assert.assertNull(interfaceConfig.getRegistries());
         service.addRegistryConfig(interfaceConfig);
         Assert.assertNull(interfaceConfig.getRegistries());
 
         // 测试关闭迁移开关，开启注册开关
         registerConfig.setOpenMigration(false);
         registerConfig.setEnableDubboRegister(true);
-        service.addRegistryConfig(interfaceConfig);
+        service.addRegistryConfigs(interfaceConfig);
         Assert.assertNull(interfaceConfig.getRegistries());
+        service.addRegistryConfig(interfaceConfig);
+        Assert.assertNotNull(interfaceConfig.getRegistries());
+        Assert.assertEquals(1, interfaceConfig.getRegistries().size());
 
-        // 开启迁移开关与注册开关
+        // 开启迁移开关与注册开关，清除测试数据
         registerConfig.setOpenMigration(true);
         registerConfig.setEnableDubboRegister(true);
+        interfaceConfig.setRegistries(null);
 
         // 测试没有注册配置
+        service.addRegistryConfigs(interfaceConfig);
+        Assert.assertNull(interfaceConfig.getRegistries());
         service.addRegistryConfig(interfaceConfig);
         Assert.assertNull(interfaceConfig.getRegistries());
 
@@ -98,10 +108,16 @@ public class RegistryConfigServiceTest {
         service.addRegistryConfig(interfaceConfig);
         Assert.assertNotNull(interfaceConfig.getRegistries());
         Assert.assertEquals(1, interfaceConfig.getRegistries().size());
+        service.addRegistryConfigs(interfaceConfig);
+        Assert.assertNotNull(interfaceConfig.getRegistries());
+        Assert.assertEquals(1, interfaceConfig.getRegistries().size());
 
         // 测试存在非sc注册配置
         interfaceConfig.setRegistry(new RegistryConfig("bar://localhost:8080"));
         service.addRegistryConfig(interfaceConfig);
+        Assert.assertNotNull(interfaceConfig.getRegistries());
+        Assert.assertEquals(1, interfaceConfig.getRegistries().size());
+        service.addRegistryConfigs(interfaceConfig);
         Assert.assertNotNull(interfaceConfig.getRegistries());
         Assert.assertEquals(2, interfaceConfig.getRegistries().size());
     }
@@ -116,29 +132,39 @@ public class RegistryConfigServiceTest {
         org.apache.dubbo.config.AbstractInterfaceConfig config = new org.apache.dubbo.config.AbstractInterfaceConfig() {
         };
 
-        // 测试关闭迁移开关
+        // 测试关闭迁移开关与注册开关
         registerConfig.setOpenMigration(false);
         registerConfig.setEnableDubboRegister(false);
+        service.addRegistryConfigs(config);
+        Assert.assertNull(config.getRegistries());
         service.addRegistryConfig(config);
         Assert.assertNull(config.getRegistries());
 
         // 测试开启迁移开关，关闭注册开关
         registerConfig.setOpenMigration(true);
         registerConfig.setEnableDubboRegister(false);
+        service.addRegistryConfigs(config);
+        Assert.assertNull(config.getRegistries());
         service.addRegistryConfig(config);
         Assert.assertNull(config.getRegistries());
 
         // 测试关闭迁移开关，开启注册开关
         registerConfig.setOpenMigration(false);
         registerConfig.setEnableDubboRegister(true);
-        service.addRegistryConfig(config);
+        service.addRegistryConfigs(config);
         Assert.assertNull(config.getRegistries());
+        service.addRegistryConfig(config);
+        Assert.assertNotNull(config.getRegistries());
+        Assert.assertEquals(1, config.getRegistries().size());
 
-        // 开启迁移开关与注册开关
+        // 开启迁移开关与注册开关，清除测试数据
         registerConfig.setOpenMigration(true);
         registerConfig.setEnableDubboRegister(true);
+        config.setRegistries(null);
 
         // 测试没有注册配置
+        service.addRegistryConfigs(config);
+        Assert.assertNull(config.getRegistries());
         service.addRegistryConfig(config);
         Assert.assertNull(config.getRegistries());
 
@@ -149,10 +175,16 @@ public class RegistryConfigServiceTest {
         service.addRegistryConfig(config);
         Assert.assertNotNull(config.getRegistries());
         Assert.assertEquals(1, config.getRegistries().size());
+        service.addRegistryConfigs(config);
+        Assert.assertNotNull(config.getRegistries());
+        Assert.assertEquals(1, config.getRegistries().size());
 
         // 测试存在非sc注册配置
         config.setRegistry(new org.apache.dubbo.config.RegistryConfig("bar://localhost:8080"));
         service.addRegistryConfig(config);
+        Assert.assertNotNull(config.getRegistries());
+        Assert.assertEquals(1, config.getRegistries().size());
+        service.addRegistryConfigs(config);
         Assert.assertNotNull(config.getRegistries());
         Assert.assertEquals(2, config.getRegistries().size());
     }

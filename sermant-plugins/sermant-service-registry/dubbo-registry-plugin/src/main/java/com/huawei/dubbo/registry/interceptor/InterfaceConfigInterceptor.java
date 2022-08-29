@@ -29,6 +29,8 @@ import com.huaweicloud.sermant.core.service.ServiceManager;
  * @since 2021-11-08
  */
 public class InterfaceConfigInterceptor extends AbstractInterceptor {
+    private static final String CHECK_REGISTRY_METHOD_NAME = "checkRegistry";
+
     private final RegistryConfigService registryConfigService;
 
     /**
@@ -40,12 +42,17 @@ public class InterfaceConfigInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext before(ExecuteContext context) {
+        if (CHECK_REGISTRY_METHOD_NAME.equals(context.getMethod().getName())) {
+            registryConfigService.addRegistryConfig(context.getObject());
+        }
         return context;
     }
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        registryConfigService.addRegistryConfig(context.getObject());
+        if (!CHECK_REGISTRY_METHOD_NAME.equals(context.getMethod().getName())) {
+            registryConfigService.addRegistryConfigs(context.getObject());
+        }
         return context;
     }
 }

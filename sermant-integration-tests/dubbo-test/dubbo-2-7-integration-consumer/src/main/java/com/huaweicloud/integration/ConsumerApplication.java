@@ -29,6 +29,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -41,6 +42,8 @@ import org.springframework.web.client.RestTemplate;
 @ImportResource({"classpath:dubbo/consumer.xml"})
 @EnableFeignClients(basePackages = "com.huaweicloud.integration.client")
 @ComponentScan(excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = ProviderController.class))
+@PropertySource(value = "${registry.config:classpath:registry.properties}", ignoreResourceNotFound = true,
+    encoding = "UTF-8")
 public class ConsumerApplication {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsumerApplication.class);
 

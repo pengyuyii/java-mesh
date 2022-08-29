@@ -34,7 +34,7 @@ import org.springframework.context.annotation.ImportResource;
  * @since 2022-04-27
  */
 @SpringBootApplication
-@ImportResource({"classpath:dubbo/provider.xml"})
+@ImportResource("${provider.config:classpath:dubbo/provider.xml}")
 @ComponentScan(excludeFilters = @Filter(type = FilterType.ASSIGNABLE_TYPE, value = ConsumerController.class))
 public class ProviderApplication {
     private static final Logger LOGGER = LoggerFactory.getLogger(ProviderApplication.class);

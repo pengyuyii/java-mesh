@@ -50,6 +50,7 @@ public class ReflectUtils {
     private static final String GET_NAME_METHOD_NAME = "getName";
     private static final String GET_PARAMETERS_METHOD_NAME = "getParameters";
     private static final String GET_REGISTRIES_METHOD_NAME = "getRegistries";
+    private static final String SET_REGISTRY_METHOD_NAME = "setRegistry";
     private static final String GET_EXTENSION_CLASSES_METHOD_NAME = "getExtensionClasses";
     private static final String IS_VALID_METHOD_NAME = "isValid";
     private static final String SET_HOST_METHOD_NAME = "setHost";
@@ -298,6 +299,18 @@ public class ReflectUtils {
      */
     public static Object setProtocol(Object obj, String protocol) {
         return invokeWithStringParameter(obj, SET_PROTOCOL_METHOD_NAME, protocol);
+    }
+
+    /**
+     * 增加默认注册中心配置以注册到sc（单注册）
+     *
+     * @param obj AbstractInterfaceConfig
+     * @param registryConfig 注册配置
+     * @see com.alibaba.dubbo.config.AbstractInterfaceConfig
+     * @see org.apache.dubbo.config.AbstractInterfaceConfig
+     */
+    public static void setRegistry(Object obj, Object registryConfig) {
+        invokeWithParameter(obj, SET_REGISTRY_METHOD_NAME, registryConfig, registryConfig.getClass());
     }
 
     /**
