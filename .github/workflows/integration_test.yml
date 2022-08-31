@@ -69,7 +69,7 @@ jobs:
           SERVER_PORT: 38020
           DUBBO_PROTOCOL_PORT: 38820
           PROVIDER_CONFIG: classpath:dubbo/provider-with-none-registry.xml
-          REGISTRY_CONFIG: classpath:registry-not-found.properties
+          HAS_DEFAULT_REGISTRY: false
         run: |
           nohup java -javaagent:sermant-agent-1.0.0/agent/sermant-agent.jar=appName=dubbo-integration-provider -jar \
           sermant-integration-tests/dubbo-test/dubbo-${{ matrix.dubbo-version }}-integration-provider/target/dubbo-integration-provider.jar > spring-and-dubbo-provider.log 2>&1 &
@@ -82,7 +82,7 @@ jobs:
           SERVER_PORT: 38021
           DUBBO_PROTOCOL_PORT: 38821
           PROVIDER_CONFIG: classpath:dubbo/provider-with-none-registry.xml
-          REGISTRY_CONFIG: classpath:registry-not-found.properties
+          HAS_DEFAULT_REGISTRY: false
         run: |
           nohup java -javaagent:sermant-agent-1.0.0/agent/sermant-agent.jar=appName=dubbo-integration-provider -jar \
           sermant-integration-tests/dubbo-test/dubbo-${{ matrix.dubbo-version }}-integration-provider/target/dubbo-integration-provider.jar > spring-and-dubbo-provider2.log 2>&1 &
@@ -110,7 +110,7 @@ jobs:
           SERVER_PORT: 38022
           DUBBO_PROTOCOL_PORT: 38822
           CONSUMER_CONFIG: classpath:dubbo/consumer-with-none-registry.xml
-          REGISTRY_CONFIG: classpath:registry-not-found.properties
+          HAS_DEFAULT_REGISTRY: false
         run: |
           nohup java -javaagent:sermant-agent-1.0.0/agent/sermant-agent.jar=appName=dubbo-integration-consumer -jar \
           sermant-integration-tests/dubbo-test/dubbo-${{ matrix.dubbo-version }}-integration-consumer/target/dubbo-integration-consumer.jar > spring-and-dubbo-consumer.log 2>&1 &

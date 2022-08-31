@@ -3,6 +3,9 @@ server:
 dubbo:
   application:
     name: dubbo-integration-consumer
+#  registry:
+#    protocol: zookeeper
+#    address: zookeeper://127.0.0.1:2181
 
 spring:
   application:
