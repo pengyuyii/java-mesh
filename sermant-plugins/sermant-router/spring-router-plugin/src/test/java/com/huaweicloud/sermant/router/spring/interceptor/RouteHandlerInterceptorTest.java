@@ -62,7 +62,6 @@ public class RouteHandlerInterceptorTest {
                 keys.add("foo");
                 return keys;
             });
-
     }
 
     /**
