@@ -14,7 +14,16 @@
  * limitations under the License.
  */
 
-package com.huaweicloud.integration.service;
+package com.huaweicloud.integration.controller;
+
+import com.huaweicloud.integration.service.TestService;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.annotation.Resource;
 
 /**
  * 测试接口
@@ -22,14 +31,11 @@ package com.huaweicloud.integration.service;
  * @author provenceee
  * @since 2022-04-28
  */
-public interface ConsumerFooService {
-    /**
-     * 测试接口
-     *
-     * @param str 参数
-     * @return 测试信息
-     */
-    String testFoo(String str);
+@RestController
+@RequestMapping("/consumer")
+public class ConsumerTestController {
+    @Resource(name = "testService")
+    private TestService testService;
 
     /**
      * 测试接口
@@ -37,20 +43,8 @@ public interface ConsumerFooService {
      * @param str 参数
      * @return 测试信息
      */
-    String testFoo2(String str);
-
-    /**
-     * 测试接口
-     *
-     * @param tag tag标签
-     * @return 测试信息
-     */
-    String testTag(String tag);
-
-    /**
-     * 获取注册协议
-     *
-     * @return 注册协议
-     */
-    String getRegistryProtocol();
+    @GetMapping("/test")
+    public String test(@RequestParam String str) {
+        return testService.test(str);
+    }
 }

@@ -22,28 +22,12 @@ package com.huaweicloud.integration.service;
  * @author provenceee
  * @since 2022-04-28
  */
-public interface ConsumerBarService {
+public interface TestService {
     /**
      * 测试接口
      *
      * @param str 参数
      * @return 测试信息
      */
-    String testBar(String str);
-
-    /**
-     * 测试接口
-     *
-     * @param str 参数
-     * @return 测试信息
-     */
-    String testBar2(String str);
-
-    /**
-     * 测试接口
-     *
-     * @param str 参数
-     * @return 测试信息
-     */
-    String testBarGeneric(String str);
+    String test(String str);
 }

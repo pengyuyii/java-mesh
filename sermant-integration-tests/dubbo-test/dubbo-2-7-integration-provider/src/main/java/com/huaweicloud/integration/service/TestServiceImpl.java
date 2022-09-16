@@ -16,35 +16,15 @@
 
 package com.huaweicloud.integration.service;
 
-import org.apache.dubbo.config.RegistryConfig;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-
 /**
- * 测试接口
+ * 测试
  *
  * @author provenceee
- * @since 2022-04-28
+ * @since 2022-09-16
  */
-public class FooServiceImpl implements FooService {
-    @Autowired
-    private RegistryConfig registryConfig;
-
-    @Value("${dubbo.protocol.port}")
-    private int port;
-
+public class TestServiceImpl implements TestService {
     @Override
-    public String foo(String str) {
-        return "foo:" + str;
-    }
-
-    @Override
-    public String foo2(String str) {
-        return "port:" + port;
-    }
-
-    @Override
-    public String getRegistryProtocol() {
-        return registryConfig.getProtocol();
+    public String test(String str) {
+        return str;
     }
 }

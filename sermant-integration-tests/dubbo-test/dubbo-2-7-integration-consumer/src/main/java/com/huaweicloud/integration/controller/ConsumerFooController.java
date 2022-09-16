@@ -19,6 +19,7 @@ package com.huaweicloud.integration.controller;
 import com.huaweicloud.integration.service.FooService;
 
 import org.apache.dubbo.rpc.RpcContext;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -74,7 +75,9 @@ public class ConsumerFooController {
      */
     @GetMapping("/testTag")
     public String testTag(@RequestParam String tag) {
-        RpcContext.getContext().setAttachment(TAG_KEY, tag);
+        if (StringUtils.hasText(tag)) {
+            RpcContext.getContext().setAttachment(TAG_KEY, tag);
+        }
         return fooService.foo2(tag);
     }
 
