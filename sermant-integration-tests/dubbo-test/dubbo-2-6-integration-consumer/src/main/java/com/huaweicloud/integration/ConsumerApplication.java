@@ -51,7 +51,11 @@ public class ConsumerApplication {
      */
     public static void main(String[] args) {
         LOGGER.info("====================start=======================");
-        SpringApplication.run(ConsumerApplication.class);
+        try {
+            SpringApplication.run(ConsumerApplication.class);
+        } catch (Throwable e) {
+            LOGGER.error("error is ", e);
+        }
         LOGGER.info("=====================end========================");
     }
 

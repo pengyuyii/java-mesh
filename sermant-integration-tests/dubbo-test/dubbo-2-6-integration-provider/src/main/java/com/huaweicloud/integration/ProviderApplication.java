@@ -46,7 +46,11 @@ public class ProviderApplication {
      */
     public static void main(String[] args) {
         LOGGER.info("====================start=======================");
-        SpringApplication.run(ProviderApplication.class);
+        try {
+            SpringApplication.run(ProviderApplication.class);
+        } catch (Throwable e) {
+            LOGGER.error("error is ", e);
+        }
         LOGGER.info("=====================end========================");
     }
 }
