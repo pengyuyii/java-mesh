@@ -136,7 +136,7 @@ public class AbstractDirectoryServiceTest {
      * 测试命中路由时
      */
     @Test
-    public void testGetTargetInvoker() {
+    public void testGetTargetInvokers() {
         // 初始化路由规则
         initRule();
         config.setEnabledDubboZoneRouter(false);
@@ -161,10 +161,10 @@ public class AbstractDirectoryServiceTest {
     }
 
     /**
-     * 测试没有命中路由时
+     * 测试命中空标签实例时
      */
     @Test
-    public void testGetMissMatchInstances() {
+    public void testGetEmptyTagsInvokers() {
         // 初始化路由规则
         initRule();
         config.setEnabledDubboZoneRouter(false);
@@ -186,6 +186,37 @@ public class AbstractDirectoryServiceTest {
         List<Object> targetInvokers = (List<Object>) service.selectInvokers(testObject, arguments, invokers);
         Assert.assertEquals(1, targetInvokers.size());
         Assert.assertEquals(invoker1, targetInvokers.get(0));
+    }
+
+    /**
+     * 测试命中非目标标签实例时
+     */
+    @Test
+    public void testGetMismatchInvokers() {
+        // 初始化路由规则
+        initRule();
+        config.setEnabledDubboZoneRouter(false);
+        List<Object> invokers = new ArrayList<>();
+        ApacheInvoker<Object> invoker1 = new ApacheInvoker<>("1.0.0",
+            Collections.singletonMap(RouterConstant.PARAMETERS_KEY_PREFIX + "test", "test"));
+        invokers.add(invoker1);
+        ApacheInvoker<Object> invoker2 = new ApacheInvoker<>("1.0.1",
+            Collections.singletonMap(RouterConstant.PARAMETERS_KEY_PREFIX + "test", "test"));
+        invokers.add(invoker2);
+        TestObject testObject = new TestObject();
+        Invocation invocation = new ApacheInvocation();
+        invocation.setAttachment("bar", "bar2");
+        Object[] arguments = new Object[]{invocation};
+        Map<String, String> queryMap = testObject.getQueryMap();
+        queryMap.put("side", "consumer");
+        queryMap.put("group", "fooGroup");
+        queryMap.put("version", "0.0.1");
+        queryMap.put("interface", "com.huaweicloud.foo.FooTest");
+        DubboCache.INSTANCE.putApplication("com.huaweicloud.foo.FooTest", "foo");
+        List<Object> targetInvokers = (List<Object>) service.selectInvokers(testObject, arguments, invokers);
+        Assert.assertEquals(1, targetInvokers.size());
+        Assert.assertEquals(invoker1, targetInvokers.get(0));
+
     }
 
     /**

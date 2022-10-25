@@ -154,7 +154,7 @@ public class RuleUtils {
      * @param routes 路由规则
      * @return 目标路由
      */
-    public static RouteResult<?> getTargetTags(List<Route> routes) {
+    public static RouteResult getTargetTags(List<Route> routes) {
         List<Map<String, String>> tags = new ArrayList<>();
         int begin = 1;
         int num = ThreadLocalRandom.current().nextInt(ONO_HUNDRED) + 1;
@@ -165,12 +165,12 @@ public class RuleUtils {
             }
             Map<String, String> currentTag = route.getTags();
             if (num >= begin && num <= begin + weight - 1) {
-                return new RouteResult<>(true, currentTag);
+                return new RouteResult(true, currentTag, tags);
             }
             begin += weight;
             tags.add(currentTag);
         }
-        return new RouteResult<>(false, tags);
+        return new RouteResult(false, Collections.emptyMap(), tags);
     }
 
     /**
@@ -302,32 +302,39 @@ public class RuleUtils {
     /**
      * 匹配结果
      *
-     * @param <T> 泛型
      * @author provenceee
      * @since 2022-07-17
      */
-    public static class RouteResult<T> {
+    public static class RouteResult {
         private final boolean match;
 
-        private final T tags;
+        private final Map<String, String> matchTag;
+
+        private final List<Map<String, String>> mismatchTag;
 
         /**
          * 构造方法
          *
          * @param match 是否匹配
-         * @param tags 目标路由
+         * @param matchTag 匹配上的标签
+         * @param mismatchTag 没匹配上的标签
          */
-        public RouteResult(boolean match, T tags) {
+        public RouteResult(boolean match, Map<String, String> matchTag, List<Map<String, String>> mismatchTag) {
             this.match = match;
-            this.tags = tags;
+            this.matchTag = matchTag;
+            this.mismatchTag = mismatchTag;
         }
 
         public boolean isMatch() {
             return match;
         }
 
-        public T getTags() {
-            return tags;
+        public Map<String, String> getMatchTag() {
+            return matchTag;
+        }
+
+        public List<Map<String, String>> getMismatchTag() {
+            return mismatchTag;
         }
     }
 }

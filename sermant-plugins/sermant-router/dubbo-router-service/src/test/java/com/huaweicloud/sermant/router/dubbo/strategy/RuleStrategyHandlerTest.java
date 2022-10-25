@@ -93,9 +93,9 @@ public class RuleStrategyHandlerTest {
         // 测试没有匹配上路由，选取不匹配标签的实例的情况
         List<Map<String, String>> tags = new ArrayList<>();
         tags.add(routes.get(0).getTags());
-        List<Object> mismatchInvokers = RuleStrategyHandler.INSTANCE.getMismatchInvokers("foo", invokers, tags);
-        Assert.assertEquals(1, mismatchInvokers.size());
-        Assert.assertEquals(invoker2, mismatchInvokers.get(0));
+        List<Object> emptyTagsInvokers = RuleStrategyHandler.INSTANCE.getEmptyTagsInvokers("foo", invokers, tags);
+        Assert.assertEquals(1, emptyTagsInvokers.size());
+        Assert.assertEquals(invoker2, emptyTagsInvokers.get(0));
     }
 
     /**
@@ -156,9 +156,9 @@ public class RuleStrategyHandlerTest {
         // 测试没有匹配上路由，选取不匹配标签的实例的情况
         List<Map<String, String>> tags = new ArrayList<>();
         tags.add(routes.get(0).getTags());
-        List<Object> mismatchInvoker = RuleStrategyHandler.INSTANCE.getMismatchInvokers("foo", invokers, tags);
-        Assert.assertEquals(1, mismatchInvoker.size());
-        Assert.assertEquals(invoker2, mismatchInvoker.get(0));
+        List<Object> emptyTagsInvokers = RuleStrategyHandler.INSTANCE.getEmptyTagsInvokers("foo", invokers, tags);
+        Assert.assertEquals(1, emptyTagsInvokers.size());
+        Assert.assertEquals(invoker2, emptyTagsInvokers.get(0));
     }
 
     /**

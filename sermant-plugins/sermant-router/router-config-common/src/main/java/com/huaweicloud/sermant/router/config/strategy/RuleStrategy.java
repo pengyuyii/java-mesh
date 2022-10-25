@@ -58,4 +58,14 @@ public interface RuleStrategy<T> {
      * @return 路由过滤后的实例
      */
     List<T> getZoneInstances(String serviceName, List<T> instances, String zone);
+
+    /**
+     * 选取空标签的实例
+     *
+     * @param serviceName 服务名
+     * @param instances 实例列表
+     * @param tags 标签
+     * @return 路由过滤后的实例
+     */
+    List<T> getEmptyTagsInstances(String serviceName, List<T> instances, List<Map<String, String>> tags);
 }

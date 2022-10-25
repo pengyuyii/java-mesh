@@ -21,7 +21,11 @@ import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.service.ServiceManager;
 import com.huaweicloud.sermant.router.common.config.RouterConfig;
+import com.huaweicloud.sermant.router.common.constants.RouterConstant;
+import com.huaweicloud.sermant.router.common.request.RequestData;
+import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
 import com.huaweicloud.sermant.router.spring.service.LoadBalancerService;
+import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
 
 import java.util.List;
 
@@ -34,6 +38,8 @@ import java.util.List;
 public class NopInstanceFilterInterceptor extends AbstractInterceptor {
     private final LoadBalancerService loadBalancerService;
 
+    private final SpringConfigService configService;
+
     private final RouterConfig routerConfig;
 
     /**
@@ -41,6 +47,7 @@ public class NopInstanceFilterInterceptor extends AbstractInterceptor {
      */
     public NopInstanceFilterInterceptor() {
         loadBalancerService = ServiceManager.getService(LoadBalancerService.class);
+        configService = ServiceManager.getService(SpringConfigService.class);
         routerConfig = PluginConfigManager.getPluginConfig(RouterConfig.class);
     }
 
@@ -49,8 +56,17 @@ public class NopInstanceFilterInterceptor extends AbstractInterceptor {
         Object[] arguments = context.getArguments();
         String serviceName = (String) arguments[0];
         List<Object> instances = (List<Object>) arguments[1];
-        context.skip(
-            loadBalancerService.getZoneInstances(serviceName, instances, routerConfig.isEnabledRegistryZoneRouter()));
+        List<Object> zoneInstances = loadBalancerService.getZoneInstances(serviceName, instances,
+            routerConfig.isEnabledRegistryZoneRouter());
+        if (configService.isInValid(RouterConstant.SPRING_CACHE_NAME)) {
+            return context.skip(zoneInstances);
+        }
+        RequestData requestData = ThreadLocalUtils.getRequestData();
+        if (requestData == null) {
+            return context.skip(zoneInstances);
+        }
+        context.skip(loadBalancerService.getTargetInstances(serviceName, zoneInstances, requestData.getPath(),
+            requestData.getHeader()));
         return context;
     }
 

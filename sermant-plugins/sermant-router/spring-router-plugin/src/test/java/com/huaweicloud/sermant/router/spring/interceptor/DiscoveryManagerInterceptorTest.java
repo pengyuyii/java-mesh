@@ -18,6 +18,7 @@ package com.huaweicloud.sermant.router.spring.interceptor;
 
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.service.ServiceManager;
+import com.huaweicloud.sermant.router.common.config.RouterConfig;
 import com.huaweicloud.sermant.router.common.constants.RouterConstant;
 import com.huaweicloud.sermant.router.spring.cache.AppCache;
 import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
@@ -28,6 +29,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * 测试DiscoveryManagerInterceptor
@@ -43,6 +49,8 @@ public class DiscoveryManagerInterceptorTest {
     private static TestSpringConfigService configService;
 
     private static MockedStatic<ServiceManager> mockServiceManager;
+
+    private final RouterConfig routerConfig;
 
     /**
      * UT执行前进行mock
@@ -62,8 +70,19 @@ public class DiscoveryManagerInterceptorTest {
         mockServiceManager.close();
     }
 
-    public DiscoveryManagerInterceptorTest() {
+    public DiscoveryManagerInterceptorTest() throws NoSuchFieldException, IllegalAccessException {
         interceptor = new DiscoveryManagerInterceptor();
+        routerConfig = new RouterConfig();
+        Map<String, String> parameters = new HashMap<>();
+        parameters.put("foo", "foo1");
+        parameters.put("bar", "bar1");
+        routerConfig.setParameters(parameters);
+        Field field = interceptor.getClass().getDeclaredField("routerConfig");
+        field.setAccessible(true);
+        Field modifiersField = Field.class.getDeclaredField("modifiers");
+        modifiersField.setAccessible(true);
+        modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+        field.set(interceptor, routerConfig);
         Object[] arguments = new Object[1];
         arguments[0] = new TestObject("foo");
         context = ExecuteContext.forMemberMethod(new Object(), null, arguments, null, null);
@@ -76,6 +95,10 @@ public class DiscoveryManagerInterceptorTest {
     public void testBefore() {
         interceptor.before(context);
         Assert.assertEquals("foo", AppCache.INSTANCE.getAppName());
+        Map<String, String> metadata = ((TestObject) context.getArguments()[0]).getMetadata();
+        Assert.assertEquals("bar1", metadata.get("bar"));
+        Assert.assertEquals("foo1", metadata.get("foo"));
+        Assert.assertEquals(routerConfig.getRouterVersion(), metadata.get("version"));
 
         context.getArguments()[0] = new TestObject(null);
         interceptor.before(context);
@@ -93,8 +116,10 @@ public class DiscoveryManagerInterceptorTest {
         Assert.assertEquals("foo", configService.getServiceName());
     }
 
-    private static class TestObject {
+    public static class TestObject {
         private final String serviceName;
+
+        private final Map<String, String> metadata;
 
         /**
          * 构造方法
@@ -103,10 +128,15 @@ public class DiscoveryManagerInterceptorTest {
          */
         public TestObject(String serviceName) {
             this.serviceName = serviceName;
+            this.metadata = new HashMap<>();
         }
 
         public String getServiceName() {
             return serviceName;
+        }
+
+        public Map<String, String> getMetadata() {
+            return metadata;
         }
     }
 }

@@ -72,19 +72,6 @@ public enum RuleStrategyHandler {
     }
 
     /**
-     * 选取不匹配标签的实例
-     *
-     * @param serviceName 服务名
-     * @param instances 实例列表
-     * @param tags 标签
-     * @return 路由过滤后的实例
-     */
-    public List<Object> getMismatchInstances(String serviceName, List<Object> instances,
-        List<Map<String, String>> tags) {
-        return getRuleStrategy(instances).getMismatchInstances(serviceName, instances, tags);
-    }
-
-    /**
      * 选取同区域的实例
      *
      * @param serviceName 服务名
@@ -94,6 +81,19 @@ public enum RuleStrategyHandler {
      */
     public List<Object> getZoneInstances(String serviceName, List<Object> instances, String zone) {
         return getRuleStrategy(instances).getZoneInstances(serviceName, instances, zone);
+    }
+
+    /**
+     * 选取空标签的实例
+     *
+     * @param serviceName 服务名
+     * @param instances 实例列表
+     * @param tags 标签
+     * @return 路由过滤后的实例
+     */
+    public List<Object> getEmptyTagsInstances(String serviceName, List<Object> instances,
+        List<Map<String, String>> tags) {
+        return getRuleStrategy(instances).getEmptyTagsInstances(serviceName, instances, tags);
     }
 
     private AbstractRuleStrategy<Object> getRuleStrategy(List<Object> instances) {

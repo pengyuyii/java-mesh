@@ -66,7 +66,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
         }
         return context;
     }
-
+    
     @Override
     public ExecuteContext after(ExecuteContext context) {
         ThreadLocalUtils.removeRequestData();

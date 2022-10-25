@@ -17,6 +17,7 @@
 package com.huaweicloud.sermant.router.spring.strategy.rule;
 
 import com.huaweicloud.sermant.router.config.strategy.AbstractRuleStrategy;
+import com.huaweicloud.sermant.router.spring.strategy.instance.EmptyTagsInstanceStrategy;
 import com.huaweicloud.sermant.router.spring.strategy.instance.MatchInstanceStrategy;
 import com.huaweicloud.sermant.router.spring.strategy.instance.MismatchInstanceStrategy;
 import com.huaweicloud.sermant.router.spring.strategy.instance.ZoneInstanceStrategy;
@@ -36,7 +37,7 @@ public class InstanceRuleStrategy<I> extends AbstractRuleStrategy<I> {
      * @param mapper metadata获取方法
      */
     public InstanceRuleStrategy(AbstractMetadataMapper<I> mapper) {
-        super("spring", new MatchInstanceStrategy<>(), new MismatchInstanceStrategy<>(), new ZoneInstanceStrategy<>(),
-            mapper);
+        super("spring", new RuleStrategies<>(new MatchInstanceStrategy<>(), new MismatchInstanceStrategy<>(),
+            new ZoneInstanceStrategy<>(), new EmptyTagsInstanceStrategy<>()), mapper);
     }
 }

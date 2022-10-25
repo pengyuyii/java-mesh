@@ -100,14 +100,34 @@ public class LoadBalancerServiceTest {
     }
 
     /**
+     * 测试getEmptyTagsInstances方法
+     */
+    @Test
+    public void testGetEmptyTagsInstances() {
+        List<Object> instances = new ArrayList<>();
+        ServiceInstance instance1 = TestDefaultServiceInstance.getTestDefaultServiceInstance("1.0.0");
+        instances.add(instance1);
+        ServiceInstance instance2 = TestDefaultServiceInstance.getTestDefaultServiceInstance("1.0.1");
+        instances.add(instance2);
+
+        Map<String, List<String>> header = new HashMap<>();
+        header.put("bar", Collections.singletonList("bar2"));
+        List<Object> targetInstances = loadBalancerService.getTargetInstances("foo", instances, null, header);
+        Assert.assertEquals(1, targetInstances.size());
+        Assert.assertEquals(instance1, targetInstances.get(0));
+    }
+
+    /**
      * 测试getMismatchInstances方法
      */
     @Test
     public void testGetMismatchInstances() {
         List<Object> instances = new ArrayList<>();
-        ServiceInstance instance1 = TestDefaultServiceInstance.getTestDefaultServiceInstance("1.0.0");
+        ServiceInstance instance1 = TestDefaultServiceInstance.getTestDefaultServiceInstance("1.0.0",
+            Collections.singletonMap("foo", "bar"));
         instances.add(instance1);
-        ServiceInstance instance2 = TestDefaultServiceInstance.getTestDefaultServiceInstance("1.0.1");
+        ServiceInstance instance2 = TestDefaultServiceInstance
+            .getTestDefaultServiceInstance("1.0.1", Collections.singletonMap("foo", "bar"));
         instances.add(instance2);
 
         Map<String, List<String>> header = new HashMap<>();

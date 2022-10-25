@@ -110,7 +110,7 @@ public class AbstractDirectoryServiceImpl implements AbstractDirectoryService {
         if (!CollectionUtils.isEmpty(routes)) {
             return RuleStrategyHandler.INSTANCE.getMatchInvokers(targetService, list, routes);
         }
-        return RuleStrategyHandler.INSTANCE.getMismatchInvokers(targetService, list, RuleUtils.getTags(rules));
+        return RuleStrategyHandler.INSTANCE.getEmptyTagsInvokers(targetService, list, RuleUtils.getTags(rules));
     }
 
     /**

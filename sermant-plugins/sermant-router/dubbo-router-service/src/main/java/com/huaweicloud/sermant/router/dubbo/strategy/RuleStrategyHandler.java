@@ -54,18 +54,6 @@ public enum RuleStrategyHandler {
     }
 
     /**
-     * 选取不匹配标签的实例
-     *
-     * @param serviceName 服务名
-     * @param invokers 实例列表
-     * @param tags 标签
-     * @return 路由过滤后的实例
-     */
-    public List<Object> getMismatchInvokers(String serviceName, List<Object> invokers, List<Map<String, String>> tags) {
-        return ruleStrategy.getMismatchInstances(serviceName, invokers, tags);
-    }
-
-    /**
      * 选取同区域的实例
      *
      * @param serviceName 服务名
@@ -75,5 +63,18 @@ public enum RuleStrategyHandler {
      */
     public List<Object> getZoneInvokers(String serviceName, List<Object> invokers, String zone) {
         return ruleStrategy.getZoneInstances(serviceName, invokers, zone);
+    }
+
+    /**
+     * 选取空标签的实例
+     *
+     * @param serviceName 服务名
+     * @param invokers 实例列表
+     * @param tags 标签
+     * @return 路由过滤后的实例
+     */
+    public List<Object> getEmptyTagsInvokers(String serviceName, List<Object> invokers,
+        List<Map<String, String>> tags) {
+        return ruleStrategy.getEmptyTagsInstances(serviceName, invokers, tags);
     }
 }

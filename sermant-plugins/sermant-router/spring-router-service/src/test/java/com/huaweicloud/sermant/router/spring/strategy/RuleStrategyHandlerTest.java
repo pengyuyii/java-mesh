@@ -92,9 +92,9 @@ public class RuleStrategyHandlerTest {
         // 测试没有匹配上路由，选取不匹配标签的实例的情况
         List<Map<String, String>> tags = new ArrayList<>();
         tags.add(routes.get(0).getTags());
-        List<Object> mismatchInstances = RuleStrategyHandler.INSTANCE.getMismatchInstances("foo", instances, tags);
-        Assert.assertEquals(1, mismatchInstances.size());
-        Assert.assertEquals(instance2, mismatchInstances.get(0));
+        List<Object> emptyTagsInstances = RuleStrategyHandler.INSTANCE.getEmptyTagsInstances("foo", instances, tags);
+        Assert.assertEquals(1, emptyTagsInstances.size());
+        Assert.assertEquals(instance2, emptyTagsInstances.get(0));
     }
 
     /**

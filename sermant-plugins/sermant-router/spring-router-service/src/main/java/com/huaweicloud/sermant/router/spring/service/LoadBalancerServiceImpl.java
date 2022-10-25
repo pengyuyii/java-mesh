@@ -61,7 +61,7 @@ public class LoadBalancerServiceImpl implements LoadBalancerService {
         if (!CollectionUtils.isEmpty(routes)) {
             return RuleStrategyHandler.INSTANCE.getMatchInstances(targetName, instances, routes);
         }
-        return RuleStrategyHandler.INSTANCE.getMismatchInstances(targetName, instances, RuleUtils.getTags(rules));
+        return RuleStrategyHandler.INSTANCE.getEmptyTagsInstances(targetName, instances, RuleUtils.getTags(rules));
     }
 
     @Override
