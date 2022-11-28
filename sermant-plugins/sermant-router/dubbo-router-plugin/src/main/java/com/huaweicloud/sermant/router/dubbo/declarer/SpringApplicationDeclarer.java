@@ -25,12 +25,12 @@ import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
  * @since 2022-01-24
  */
 public class SpringApplicationDeclarer extends AbstractDeclarer {
-    private static final String[] ENHANCE_CLASS = {"org.springframework.boot.SpringApplication"};
+    private static final String[] ENHANCE_CLASS = {"org.springframework.context.support.AbstractApplicationContext"};
 
     private static final String INTERCEPT_CLASS
         = "com.huaweicloud.sermant.router.dubbo.interceptor.SpringApplicationInterceptor";
 
-    private static final String METHOD_NAME = "run";
+    private static final String METHOD_NAME = "publishEvent";
 
     /**
      * 构造方法
@@ -41,6 +41,7 @@ public class SpringApplicationDeclarer extends AbstractDeclarer {
 
     @Override
     public MethodMatcher getMethodMatcher() {
-        return super.getMethodMatcher().and(MethodMatcher.isMemberMethod());
+        return super.getMethodMatcher()
+            .and(MethodMatcher.paramTypesEqual("java.lang.Object", "org.springframework.core.ResolvableType"));
     }
 }

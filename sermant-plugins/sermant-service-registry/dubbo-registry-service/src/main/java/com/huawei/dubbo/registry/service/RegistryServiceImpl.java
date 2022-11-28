@@ -144,6 +144,7 @@ public class RegistryServiceImpl implements RegistryService {
             // 没有加载sc的注册spi就直接return
             return;
         }
+        LOGGER.info("Start registration...");
         config = PluginConfigManager.getPluginConfig(RegisterConfig.class);
         serviceMeta = ConfigManager.getConfig(ServiceMeta.class);
         governanceService = ServiceManager.getService(GovernanceService.class);
@@ -173,6 +174,7 @@ public class RegistryServiceImpl implements RegistryService {
      */
     @Override
     public void doSubscribe(Object url, Object notifyListener) {
+        LOGGER.info("Subscribe url is " + url.toString());
         if (!CONSUMER_PROTOCOL_PREFIX.equals(ReflectUtils.getProtocol(url))) {
             return;
         }
@@ -209,6 +211,7 @@ public class RegistryServiceImpl implements RegistryService {
      */
     @Override
     public void addRegistryUrls(Object url) {
+        LOGGER.info("Registry url is " + url.toString());
         if (!CONSUMER_PROTOCOL_PREFIX.equals(ReflectUtils.getProtocol(url))) {
             registryUrls.add(url);
         }

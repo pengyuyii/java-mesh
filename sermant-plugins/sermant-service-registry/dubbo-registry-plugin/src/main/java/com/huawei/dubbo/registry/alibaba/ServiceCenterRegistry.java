@@ -66,4 +66,8 @@ public class ServiceCenterRegistry extends FailbackRegistry {
     public boolean isAvailable() {
         return true;
     }
+
+    public boolean exists(com.alibaba.dubbo.common.URL url) {
+        return true;
+    }
 }

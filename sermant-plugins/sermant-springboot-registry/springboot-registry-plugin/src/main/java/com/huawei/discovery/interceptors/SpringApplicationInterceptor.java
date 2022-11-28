@@ -24,6 +24,10 @@ import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
 import com.huaweicloud.sermant.core.service.ServiceManager;
 
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextStartedEvent;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -54,11 +58,24 @@ public class SpringApplicationInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        Object logStartupInfo = context.getMemberFieldValue("logStartupInfo");
-        if ((logStartupInfo instanceof Boolean) && (Boolean) logStartupInfo && INIT.compareAndSet(false, true)) {
+        Object obj = context.getArguments()[0];
+        if (obj == null) {
+            return context;
+        }
+        String name = obj.getClass().getCanonicalName();
+        if ("org.springframework.context.event.ContextStartedEvent".equals(name)) {
+            start(((ContextStartedEvent) obj).getApplicationContext());
+        }
+        if ("org.springframework.boot.context.event.ApplicationStartedEvent".equals(name)) {
+            start(((ApplicationStartedEvent) obj).getApplicationContext());
+        }
+        return context;
+    }
+
+    private void start(ApplicationContext applicationContext) {
+        if (applicationContext.getParent() != null && INIT.compareAndSet(false, true)) {
             registryService.registry(RegisterContext.INSTANCE.getServiceInstance());
             configCenterService.init(RegisterContext.INSTANCE.getServiceInstance().getServiceName());
         }
-        return context;
     }
 }

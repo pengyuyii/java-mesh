@@ -23,6 +23,10 @@ import com.huaweicloud.sermant.router.common.constants.RouterConstant;
 import com.huaweicloud.sermant.router.dubbo.cache.DubboCache;
 import com.huaweicloud.sermant.router.dubbo.service.DubboConfigService;
 
+import org.springframework.boot.context.event.ApplicationStartedEvent;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.event.ContextStartedEvent;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -50,10 +54,23 @@ public class SpringApplicationInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        Object logStartupInfo = context.getMemberFieldValue("logStartupInfo");
-        if ((logStartupInfo instanceof Boolean) && (Boolean) logStartupInfo && INIT.compareAndSet(false, true)) {
-            configService.init(RouterConstant.DUBBO_CACHE_NAME, DubboCache.INSTANCE.getAppName());
+        Object obj = context.getArguments()[0];
+        if (obj == null) {
+            return context;
+        }
+        String name = obj.getClass().getCanonicalName();
+        if ("org.springframework.context.event.ContextStartedEvent".equals(name)) {
+            init(((ContextStartedEvent) obj).getApplicationContext());
+        }
+        if ("org.springframework.boot.context.event.ApplicationStartedEvent".equals(name)) {
+            init(((ApplicationStartedEvent) obj).getApplicationContext());
         }
         return context;
+    }
+
+    private void init(ApplicationContext applicationContext) {
+        if (applicationContext.getParent() != null && INIT.compareAndSet(false, true)) {
+            configService.init(RouterConstant.DUBBO_CACHE_NAME, DubboCache.INSTANCE.getAppName());
+        }
     }
 }
