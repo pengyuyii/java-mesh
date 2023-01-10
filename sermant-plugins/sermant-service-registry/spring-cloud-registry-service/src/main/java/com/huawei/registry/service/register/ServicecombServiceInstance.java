@@ -39,6 +39,10 @@ public class ServicecombServiceInstance implements MicroServiceInstance {
 
     private final MicroserviceInstance microserviceInstance;
 
+    private final String endpoint;
+
+    private final boolean secure;
+
     private String ip;
 
     private int port;
@@ -51,6 +55,10 @@ public class ServicecombServiceInstance implements MicroServiceInstance {
     public ServicecombServiceInstance(MicroserviceInstance instance) {
         this.microserviceInstance = instance;
         this.registerConfig = PluginConfigManager.getPluginConfig(RegisterConfig.class);
+        this.endpoint = microserviceInstance.getEndpoints().stream()
+            .filter(point -> point.startsWith("rest://"))
+            .findAny().orElse(null);
+        this.secure = endpoint != null && endpoint.endsWith("?sslEnabled=true");
     }
 
     @Override
@@ -66,7 +74,7 @@ public class ServicecombServiceInstance implements MicroServiceInstance {
     @Override
     public String getIp() {
         if (ip == null) {
-            final Optional<String> ipByEndpoint = CommonUtils.getIpByEndpoint(getRestEndpoint());
+            final Optional<String> ipByEndpoint = CommonUtils.getIpByEndpoint(endpoint);
             ipByEndpoint.ifPresent(filterIp -> ip = filterIp);
         }
         return ip;
@@ -75,15 +83,9 @@ public class ServicecombServiceInstance implements MicroServiceInstance {
     @Override
     public int getPort() {
         if (port == 0) {
-            port = CommonUtils.getPortByEndpoint(getRestEndpoint());
+            port = CommonUtils.getPortByEndpoint(endpoint);
         }
         return port;
-    }
-
-    private String getRestEndpoint() {
-        return microserviceInstance.getEndpoints().stream()
-            .filter(endpoint -> endpoint.startsWith("rest://"))
-            .findAny().orElse(null);
     }
 
     @Override
@@ -99,5 +101,9 @@ public class ServicecombServiceInstance implements MicroServiceInstance {
     @Override
     public Map<String, String> getMetadata() {
         return microserviceInstance.getProperties();
+    }
+
+    public boolean isSecure() {
+        return secure;
     }
 }

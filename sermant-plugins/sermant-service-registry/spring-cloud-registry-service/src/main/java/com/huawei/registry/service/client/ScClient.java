@@ -411,8 +411,12 @@ public class ScClient {
     }
 
     private List<String> buildEndpoints() {
-        return Collections.singletonList(String.format(Locale.ENGLISH, "rest://%s:%d", HostUtils.getMachineIp(),
-            RegisterContext.INSTANCE.getClientInfo().getPort()));
+        String endPoint =
+            "rest://" + HostUtils.getMachineIp() + ":" + RegisterContext.INSTANCE.getClientInfo().getPort();
+        if (commonConfig.isSsl()) {
+            endPoint = endPoint + "?sslEnabled=true";
+        }
+        return Collections.singletonList(endPoint);
     }
 
     private void buildMicroServiceInstance() {

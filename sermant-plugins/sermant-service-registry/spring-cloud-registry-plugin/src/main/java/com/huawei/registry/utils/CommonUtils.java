@@ -69,8 +69,12 @@ public class CommonUtils {
             return 0;
         }
         final int index = endpoint.lastIndexOf(':');
+        int endIndex = endpoint.lastIndexOf('?');
+        if (endIndex < 0) {
+            endIndex = endpoint.length();
+        }
         if (index != -1) {
-            return Integer.parseInt(endpoint.substring(index + 1));
+            return Integer.parseInt(endpoint.substring(index + 1, endIndex));
         }
         return 0;
     }
@@ -87,7 +91,7 @@ public class CommonUtils {
         }
         final String[] parts = endpoint.split(":");
         if (parts.length == SERVICECOMB_ENDPOINT_PARTS
-                && parts[ENDPOINTS_IP_PART_INDEX].length() > ENDPOINTS_SEPARATOR_LEN) {
+            && parts[ENDPOINTS_IP_PART_INDEX].length() > ENDPOINTS_SEPARATOR_LEN) {
             return Optional.of(parts[ENDPOINTS_IP_PART_INDEX].substring(ENDPOINTS_SEPARATOR_LEN));
         }
         return Optional.empty();
