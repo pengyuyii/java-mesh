@@ -16,14 +16,11 @@
 
 package com.huaweicloud.intergration.graceful;
 
-import com.huaweicloud.intergration.common.rule.DisableRule;
 import com.huaweicloud.intergration.common.utils.EnvUtils;
 import com.huaweicloud.intergration.common.utils.RequestUtils;
 
 import org.junit.Assert;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TestRule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,8 +38,8 @@ import java.util.Map;
  * @since 2022-11-14
  */
 public class GracefulTest {
-    @Rule(order = 0)
-    public final TestRule rule = new DisableRule();
+    //    @Rule(order = 0)
+    //    public final TestRule rule = new DisableRule();
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GracefulTest.class);
 
@@ -53,7 +50,7 @@ public class GracefulTest {
      */
     private static final int MIN_RATE = 2;
 
-    private static final int REQUEST_COUNT = 1000;
+    private static final int REQUEST_COUNT = 10000;
 
     private final String url = getBaseUrl();
 
@@ -62,9 +59,9 @@ public class GracefulTest {
      */
     @Test
     public void testGracefulUp() {
-        if (!isTargetTest("up")) {
-            return;
-        }
+        //        if (!isTargetTest("up")) {
+        //            return;
+        //        }
         final Map<String, Integer> statisticMap = new HashMap<>();
         for (int i = 0; i < REQUEST_COUNT; i++) {
             statistic(statisticMap);
@@ -94,13 +91,13 @@ public class GracefulTest {
      */
     @Test
     public void testGracefulDown() {
-        if (!isTargetTest("down")) {
-            return;
-        }
+        //        if (!isTargetTest("down")) {
+        //            return;
+        //        }
         try {
             for (int i = 0; i < REQUEST_COUNT; i++) {
                 RequestUtils.get(buildUrl("testGraceful"), Collections.emptyMap(),
-                        String.class);
+                    String.class);
             }
         } catch (Exception exception) {
             LOGGER.error(exception.getMessage(), exception);
@@ -110,7 +107,7 @@ public class GracefulTest {
 
     private void statistic(Map<String, Integer> statisticMap) {
         final String port = RequestUtils.get(buildUrl("testGraceful"), Collections.emptyMap(),
-                String.class);
+            String.class);
         Integer count = statisticMap.getOrDefault(port, 0);
         statisticMap.put(port, ++count);
     }

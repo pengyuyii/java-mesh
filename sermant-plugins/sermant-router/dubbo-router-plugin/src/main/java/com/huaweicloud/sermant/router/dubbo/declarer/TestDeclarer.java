@@ -14,26 +14,36 @@
  * limitations under the License.
  */
 
-package com.huaweicloud.sermant.router.spring.declarer;
+package com.huaweicloud.sermant.router.dubbo.declarer;
+
+import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
 
 /**
- * ClientHttpRequestInterceptor增强类，发起restTemplate请求方法
+ * 增强ContextFilter类的invoke方法
  *
  * @author provenceee
- * @since 2022-07-12
+ * @since 2022-09-26
  */
-public class ClientHttpRequestDeclarer extends AbstractDeclarer {
-    private static final String ENHANCE_CLASS = "org.springframework.http.client.ClientHttpRequest";
+public class TestDeclarer extends AbstractDeclarer {
+    private static final String[] ENHANCE_CLASS = {"org.apache.dubbo.registry.zookeeper.ZookeeperRegistry"};
 
     private static final String INTERCEPT_CLASS
-        = "com.huaweicloud.sermant.router.spring.interceptor.ClientHttpRequestInterceptor";
-
-    private static final String METHOD_NAME = "execute";
+        = "com.huaweicloud.sermant.router.dubbo.interceptor.TestInterceptor";
 
     /**
      * 构造方法
      */
-    public ClientHttpRequestDeclarer() {
-        super(ENHANCE_CLASS, INTERCEPT_CLASS, METHOD_NAME);
+    public TestDeclarer() {
+        super(ENHANCE_CLASS, INTERCEPT_CLASS, null);
+    }
+
+    /**
+     * 获取方法匹配器
+     *
+     * @return 方法匹配器
+     */
+    @Override
+    public MethodMatcher getMethodMatcher() {
+        return MethodMatcher.isConstructor();
     }
 }

@@ -40,9 +40,9 @@ import java.util.Map.Entry;
 public class ClientHttpRequestInterceptor extends AbstractInterceptor {
     @Override
     public ExecuteContext before(ExecuteContext context) {
-        Object argument = context.getArguments()[0];
-        if (argument instanceof HttpRequest) {
-            HttpRequest request = (HttpRequest) argument;
+        Object obj = context.getObject();
+        if (obj instanceof HttpRequest) {
+            HttpRequest request = (HttpRequest) obj;
             HttpHeaders headers = request.getHeaders();
             putIfAbsent(headers);
             String path = request.getURI().getPath();
@@ -63,6 +63,14 @@ public class ClientHttpRequestInterceptor extends AbstractInterceptor {
         return context;
     }
 
+    private Map<String, List<String>> getHeader(HttpHeaders headers) {
+        Map<String, List<String>> map = new HashMap<>();
+        for (Entry<String, List<String>> entry : headers.entrySet()) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        return map;
+    }
+
     private void putIfAbsent(HttpHeaders headers) {
         RequestHeader requestHeader = ThreadLocalUtils.getRequestHeader();
         if (requestHeader != null) {
@@ -72,13 +80,5 @@ public class ClientHttpRequestInterceptor extends AbstractInterceptor {
                 headers.putIfAbsent(entry.getKey(), new LinkedList<>(entry.getValue()));
             }
         }
-    }
-
-    private Map<String, List<String>> getHeader(HttpHeaders headers) {
-        Map<String, List<String>> map = new HashMap<>();
-        for (Entry<String, List<String>> entry : headers.entrySet()) {
-            map.put(entry.getKey(), entry.getValue());
-        }
-        return map;
     }
 }

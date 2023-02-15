@@ -73,7 +73,9 @@ public class SpringRequestInterceptor implements HandlerInterceptor {
             // 已被标记为关闭状态, 开始统计进入的请求数
             final ClientInfo clientInfo = RegisterContext.INSTANCE.getClientInfo();
             response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
-                buildEndpoint(clientInfo.getIp(), clientInfo.getPort()));
+                clientInfo.getIp() + ":" + clientInfo.getPort());
+            response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
+                clientInfo.getHost() + ":" + clientInfo.getPort());
             response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_NAME, clientInfo.getServiceName());
         }
         return true;
