@@ -6,10 +6,10 @@ com.huaweicloud.sermant.router.spring.declarer.DiscoveryManagerDeclarer
 com.huaweicloud.sermant.router.spring.declarer.EurekaHttpClientDeclarer
 com.huaweicloud.sermant.router.spring.declarer.FeignClientDeclarer
 com.huaweicloud.sermant.router.spring.declarer.HandlerExecutionChainDeclarer
-com.huaweicloud.sermant.router.spring.declarer.HystrixActionDeclarer
+#com.huaweicloud.sermant.router.spring.declarer.HystrixActionDeclarer
 com.huaweicloud.sermant.router.spring.declarer.LoadBalancerClientFilterDeclarer
 com.huaweicloud.sermant.router.spring.declarer.NopInstanceFilterDeclarer
-com.huaweicloud.sermant.router.spring.declarer.ServiceInstanceListSupplierDeclarer
+#com.huaweicloud.sermant.router.spring.declarer.ServiceInstanceListSupplierDeclarer
 com.huaweicloud.sermant.router.spring.declarer.ServiceRegistryDeclarer
 com.huaweicloud.sermant.router.spring.declarer.OkHttp3ClientDeclarer
 com.huaweicloud.sermant.router.spring.declarer.OkHttpClientDeclarer
