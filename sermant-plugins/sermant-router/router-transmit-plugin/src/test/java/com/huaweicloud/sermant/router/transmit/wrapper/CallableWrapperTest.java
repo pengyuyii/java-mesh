@@ -16,31 +16,58 @@
 
 package com.huaweicloud.sermant.router.transmit.wrapper;
 
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
+import com.huaweicloud.sermant.router.transmit.BaseTest;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * 测试
+ * 测试CallableWrapper
  *
  * @author provenceee
  * @since 2023-05-27
  */
-public class CallableWrapperTest {
+public class CallableWrapperTest extends BaseTest {
     @Test
-    public void test() throws Exception {
+    public void testCanTransmit() throws Exception {
         Object obj = new Object();
         CallableWrapper<Object> wrapper = new CallableWrapper<>(() -> {
             Assert.assertNotNull(ThreadLocalUtils.getRequestData());
             Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
             return obj;
-        }, new RequestTag(null), new RequestData(null, null, null));
+        }, new RequestTag(null), new RequestData(null, null, null), false);
 
         Assert.assertNull(ThreadLocalUtils.getRequestData());
         Assert.assertNull(ThreadLocalUtils.getRequestTag());
+
+        Assert.assertEquals(obj, wrapper.call());
+
+        Assert.assertNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNull(ThreadLocalUtils.getRequestTag());
+    }
+
+    @Test
+    public void testCannotTransmit() throws Exception {
+        // 初始条件
+        ThreadLocalUtils.setRequestTag(new RequestTag(null));
+        ThreadLocalUtils.setRequestData(new RequestData(null, null, null));
+
+        Assert.assertNotNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
+
+        Object obj = new Object();
+        CallableWrapper<Object> wrapper = new CallableWrapper<>(() -> {
+            Assert.assertNull(ThreadLocalUtils.getRequestData());
+            Assert.assertNull(ThreadLocalUtils.getRequestTag());
+            return obj;
+        }, new RequestTag(null), new RequestData(null, null, null), true);
+
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestData").orElse(null));
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestTag").orElse(null));
 
         Assert.assertEquals(obj, wrapper.call());
 

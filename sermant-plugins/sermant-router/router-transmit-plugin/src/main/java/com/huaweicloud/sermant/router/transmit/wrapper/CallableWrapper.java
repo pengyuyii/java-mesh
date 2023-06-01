@@ -18,7 +18,6 @@ package com.huaweicloud.sermant.router.transmit.wrapper;
 
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
-import com.huaweicloud.sermant.router.transmit.utils.ThreadWrapperUtils;
 
 import java.util.concurrent.Callable;
 
@@ -29,28 +28,17 @@ import java.util.concurrent.Callable;
  * @author provenceee
  * @since 2023-04-21
  */
-public class CallableWrapper<T> implements Callable<T> {
-    private final Callable<T> callable;
-
-    private final RequestTag requestTag;
-
-    private final RequestData requestData;
-
+public class CallableWrapper<T> extends AbstractWrapper<T> implements Callable<T> {
     /**
      * 构造方法
      *
      * @param callable callable
      * @param requestTag 请求标记
      * @param requestData 请求数据
+     * @param cannotTransmit 执行方法之前是否需要删除线程变量
      */
-    public CallableWrapper(Callable<T> callable, RequestTag requestTag, RequestData requestData) {
-        this.callable = callable;
-        this.requestTag = requestTag;
-        this.requestData = requestData;
-    }
-
-    @Override
-    public T call() throws Exception {
-        return ThreadWrapperUtils.call(callable, requestTag, requestData);
+    public CallableWrapper(Callable<T> callable, RequestTag requestTag, RequestData requestData,
+            boolean cannotTransmit) {
+        super(null, callable, requestTag, requestData, cannotTransmit);
     }
 }

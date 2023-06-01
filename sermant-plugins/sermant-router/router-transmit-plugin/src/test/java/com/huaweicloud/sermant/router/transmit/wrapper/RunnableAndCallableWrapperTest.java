@@ -16,24 +16,28 @@
 
 package com.huaweicloud.sermant.router.transmit.wrapper;
 
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
+import com.huaweicloud.sermant.router.transmit.BaseTest;
 
 import org.junit.Assert;
 import org.junit.Test;
 
 /**
+ * 测试RunnableAndCallableWrapper
+ *
  * @author provenceee
  * @since 2023-05-27
  */
-public class RunnableAndCallableWrapperTest {
+public class RunnableAndCallableWrapperTest extends BaseTest {
     @Test
-    public void testRun() {
+    public void testRunCanTransmit() {
         RunnableAndCallableWrapper<Object> wrapper = new RunnableAndCallableWrapper<>(() -> {
             Assert.assertNotNull(ThreadLocalUtils.getRequestData());
             Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
-        }, null, new RequestTag(null), new RequestData(null, null, null));
+        }, null, new RequestTag(null), new RequestData(null, null, null), false);
 
         Assert.assertNull(ThreadLocalUtils.getRequestData());
         Assert.assertNull(ThreadLocalUtils.getRequestTag());
@@ -45,16 +49,64 @@ public class RunnableAndCallableWrapperTest {
     }
 
     @Test
-    public void testCall() throws Exception {
+    public void testRunCannotTransmit() {
+        // 初始条件
+        ThreadLocalUtils.setRequestTag(new RequestTag(null));
+        ThreadLocalUtils.setRequestData(new RequestData(null, null, null));
+
+        Assert.assertNotNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
+
+        RunnableWrapper<Object> wrapper = new RunnableWrapper<>(() -> {
+            Assert.assertNull(ThreadLocalUtils.getRequestData());
+            Assert.assertNull(ThreadLocalUtils.getRequestTag());
+        }, new RequestTag(null), new RequestData(null, null, null), true);
+
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestData").orElse(null));
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestTag").orElse(null));
+
+        wrapper.run();
+
+        Assert.assertNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNull(ThreadLocalUtils.getRequestTag());
+    }
+
+    @Test
+    public void testCallCanTransmit() throws Exception {
         Object obj = new Object();
         RunnableAndCallableWrapper<Object> wrapper = new RunnableAndCallableWrapper<>(null, () -> {
             Assert.assertNotNull(ThreadLocalUtils.getRequestData());
             Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
             return obj;
-        }, new RequestTag(null), new RequestData(null, null, null));
+        }, new RequestTag(null), new RequestData(null, null, null), false);
 
         Assert.assertNull(ThreadLocalUtils.getRequestData());
         Assert.assertNull(ThreadLocalUtils.getRequestTag());
+
+        Assert.assertEquals(obj, wrapper.call());
+
+        Assert.assertNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNull(ThreadLocalUtils.getRequestTag());
+    }
+
+    @Test
+    public void testCallCannotTransmit() throws Exception {
+        // 初始条件
+        ThreadLocalUtils.setRequestTag(new RequestTag(null));
+        ThreadLocalUtils.setRequestData(new RequestData(null, null, null));
+
+        Assert.assertNotNull(ThreadLocalUtils.getRequestData());
+        Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
+
+        Object obj = new Object();
+        CallableWrapper<Object> wrapper = new CallableWrapper<>(() -> {
+            Assert.assertNull(ThreadLocalUtils.getRequestData());
+            Assert.assertNull(ThreadLocalUtils.getRequestTag());
+            return obj;
+        }, new RequestTag(null), new RequestData(null, null, null), true);
+
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestData").orElse(null));
+        Assert.assertNull(ReflectUtils.getFieldValue(wrapper, "requestTag").orElse(null));
 
         Assert.assertEquals(obj, wrapper.call());
 

@@ -20,6 +20,8 @@ import com.huaweicloud.sermant.core.plugin.agent.declarer.AbstractPluginDeclarer
 import com.huaweicloud.sermant.core.plugin.agent.declarer.InterceptDeclarer;
 import com.huaweicloud.sermant.core.plugin.agent.matcher.ClassMatcher;
 import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
+import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
+import com.huaweicloud.sermant.router.common.config.TransmitConfig;
 
 /**
  * 拦截Executor
@@ -43,7 +45,14 @@ public class ExecutorDeclarer extends AbstractPluginDeclarer {
     @Override
     public InterceptDeclarer[] getInterceptDeclarers(ClassLoader classLoader) {
         return new InterceptDeclarer[]{
-                InterceptDeclarer.build(MethodMatcher.nameContains(METHOD_NAME), INTERCEPT_CLASS)
+                InterceptDeclarer.build(MethodMatcher.nameContains(METHOD_NAME).and(MethodMatcher.isPublicMethod()),
+                        INTERCEPT_CLASS)
         };
+    }
+
+    @Override
+    public boolean isEnabled() {
+        TransmitConfig pluginConfig = PluginConfigManager.getPluginConfig(TransmitConfig.class);
+        return pluginConfig.isEnabledThread() || pluginConfig.isEnabledThreadPool();
     }
 }

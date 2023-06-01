@@ -16,6 +16,8 @@
 
 package com.huaweicloud.sermant.router.common.utils;
 
+import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
+import com.huaweicloud.sermant.router.common.config.TransmitConfig;
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
 
@@ -29,11 +31,22 @@ import java.util.Map;
  * @since 2022-07-08
  */
 public class ThreadLocalUtils {
-    private static final ThreadLocal<RequestTag> TAG = new InheritableThreadLocal<>();
+    private static final ThreadLocal<RequestTag> TAG;
 
-    private static final ThreadLocal<RequestData> DATA = new InheritableThreadLocal<>();
+    private static final ThreadLocal<RequestData> DATA;
 
     private ThreadLocalUtils() {
+    }
+
+    static {
+        TransmitConfig transmitConfig = PluginConfigManager.getPluginConfig(TransmitConfig.class);
+        if (transmitConfig.isEnabledThread()) {
+            TAG = new InheritableThreadLocal<>();
+            DATA = new InheritableThreadLocal<>();
+        } else {
+            TAG = new ThreadLocal<>();
+            DATA = new ThreadLocal<>();
+        }
     }
 
     /**

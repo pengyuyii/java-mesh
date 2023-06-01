@@ -18,36 +18,24 @@ package com.huaweicloud.sermant.router.transmit.wrapper;
 
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
-import com.huaweicloud.sermant.router.transmit.utils.ThreadWrapperUtils;
 
 /**
  * Runnable包装类
  *
+ * @param <T> 泛型
  * @author provenceee
  * @since 2023-04-21
  */
-public class RunnableWrapper implements Runnable {
-    private final Runnable runnable;
-
-    private final RequestTag requestTag;
-
-    private final RequestData requestData;
-
+public class RunnableWrapper<T> extends AbstractWrapper<T> implements Runnable {
     /**
      * 构造方法
      *
      * @param runnable runnable
      * @param requestTag 请求标记
      * @param requestData 请求数据
+     * @param cannotTransmit 执行方法之前是否需要删除线程变量
      */
-    public RunnableWrapper(Runnable runnable, RequestTag requestTag, RequestData requestData) {
-        this.runnable = runnable;
-        this.requestTag = requestTag;
-        this.requestData = requestData;
-    }
-
-    @Override
-    public void run() {
-        ThreadWrapperUtils.run(runnable, requestTag, requestData);
+    public RunnableWrapper(Runnable runnable, RequestTag requestTag, RequestData requestData, boolean cannotTransmit) {
+        super(runnable, null, requestTag, requestData, cannotTransmit);
     }
 }

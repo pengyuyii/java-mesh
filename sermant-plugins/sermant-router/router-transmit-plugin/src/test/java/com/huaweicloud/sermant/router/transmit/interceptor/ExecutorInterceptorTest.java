@@ -18,6 +18,8 @@ package com.huaweicloud.sermant.router.transmit.interceptor;
 
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
+import com.huaweicloud.sermant.router.transmit.BaseTest;
+import com.huaweicloud.sermant.router.transmit.RunnableAndCallable;
 import com.huaweicloud.sermant.router.transmit.wrapper.CallableWrapper;
 import com.huaweicloud.sermant.router.transmit.wrapper.RunnableAndCallableWrapper;
 import com.huaweicloud.sermant.router.transmit.wrapper.RunnableWrapper;
@@ -35,7 +37,7 @@ import java.util.concurrent.Callable;
  * @author provenceee
  * @since 2023-05-26
  */
-public class ExecutorInterceptorTest {
+public class ExecutorInterceptorTest extends BaseTest {
     private final ExecutorInterceptor interceptor;
 
     private final ExecuteContext context;
@@ -65,7 +67,7 @@ public class ExecutorInterceptorTest {
         ThreadLocalUtils.addRequestTag(Collections.singletonMap("foo", Collections.singletonList("bar")));
 
         // 测试已经包装过了
-        RunnableWrapper runnableWrapper = new RunnableWrapper(null, null, null);
+        RunnableWrapper<?> runnableWrapper = new RunnableWrapper<>(null, null, null, false);
         arguments[0] = runnableWrapper;
         interceptor.before(context);
         Assert.assertEquals(runnableWrapper, context.getArguments()[0]);
@@ -94,16 +96,5 @@ public class ExecutorInterceptorTest {
     public void clear() {
         ThreadLocalUtils.removeRequestData();
         ThreadLocalUtils.removeRequestTag();
-    }
-
-    public static class RunnableAndCallable implements Runnable, Callable<Object> {
-        @Override
-        public void run() {
-        }
-
-        @Override
-        public Object call() {
-            return null;
-        }
     }
 }

@@ -17,6 +17,8 @@
 package com.huaweicloud.sermant.router.spring.declarer;
 
 import com.huaweicloud.sermant.core.plugin.agent.matcher.ClassMatcher;
+import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
+import com.huaweicloud.sermant.router.common.config.TransmitConfig;
 
 /**
  * spring cloud loadbalancer拦截点
@@ -43,5 +45,10 @@ public class LoadBalancerDeclarer extends AbstractDeclarer {
     @Override
     public ClassMatcher getClassMatcher() {
         return ClassMatcher.nameContains(ENHANCE_CLASS);
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return PluginConfigManager.getPluginConfig(TransmitConfig.class).isEnabledThreadPool();
     }
 }

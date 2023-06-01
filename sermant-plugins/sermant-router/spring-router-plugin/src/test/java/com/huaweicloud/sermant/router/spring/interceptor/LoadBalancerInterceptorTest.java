@@ -20,6 +20,7 @@ import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.service.ServiceManager;
 import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
+import com.huaweicloud.sermant.router.spring.BaseTransmitConfigTest;
 import com.huaweicloud.sermant.router.spring.service.LoadBalancerService;
 
 import reactor.core.publisher.Mono;
@@ -47,7 +48,7 @@ import java.util.List;
  * @author provenceee
  * @since 2023-05-27
  */
-public class LoadBalancerInterceptorTest {
+public class LoadBalancerInterceptorTest extends BaseTransmitConfigTest {
     private static MockedStatic<ServiceManager> mockServiceManager;
 
     private final LoadBalancerInterceptor interceptor;

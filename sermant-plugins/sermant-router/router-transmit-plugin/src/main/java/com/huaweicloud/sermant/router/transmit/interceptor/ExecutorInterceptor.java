@@ -16,19 +16,8 @@
 
 package com.huaweicloud.sermant.router.transmit.interceptor;
 
-import com.huaweicloud.sermant.core.common.LoggerFactory;
-import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
-import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
-import com.huaweicloud.sermant.router.common.request.RequestData;
-import com.huaweicloud.sermant.router.common.request.RequestTag;
-import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
-import com.huaweicloud.sermant.router.transmit.wrapper.CallableWrapper;
-import com.huaweicloud.sermant.router.transmit.wrapper.RunnableAndCallableWrapper;
-import com.huaweicloud.sermant.router.transmit.wrapper.RunnableWrapper;
-
-import java.util.concurrent.Callable;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
+import com.huaweicloud.sermant.router.common.config.TransmitConfig;
 
 /**
  * 拦截Executor
@@ -36,54 +25,11 @@ import java.util.logging.Logger;
  * @author provenceee
  * @since 2023-04-21
  */
-public class ExecutorInterceptor extends AbstractInterceptor {
-    private static final Logger LOGGER = LoggerFactory.getLogger();
-
-    @Override
-    public ExecuteContext before(ExecuteContext context) {
-        Object[] arguments = context.getArguments();
-        if (arguments == null || arguments.length == 0 || arguments[0] == null) {
-            return context;
-        }
-        RequestTag requestTag = ThreadLocalUtils.getRequestTag();
-        RequestData requestData = ThreadLocalUtils.getRequestData();
-        if (requestTag != null || requestData != null) {
-            Object argument = arguments[0];
-            if (argument instanceof RunnableAndCallableWrapper || argument instanceof RunnableWrapper
-                    || argument instanceof CallableWrapper) {
-                return context;
-            }
-            if (argument instanceof Runnable && argument instanceof Callable) {
-                log(argument, requestTag, requestData, "runnableAndCallableWrapper");
-                arguments[0] = new RunnableAndCallableWrapper<>((Runnable) argument, (Callable<?>) argument,
-                        requestTag, requestData);
-                return context;
-            }
-            if (argument instanceof Runnable) {
-                log(argument, requestTag, requestData, "runnableWrapper");
-                arguments[0] = new RunnableWrapper((Runnable) argument, requestTag, requestData);
-                return context;
-            }
-            if (argument instanceof Callable) {
-                log(argument, requestTag, requestData, "callableWrapper");
-                arguments[0] = new CallableWrapper<>((Callable<?>) argument, requestTag, requestData);
-                return context;
-            }
-        }
-        return context;
-    }
-
-    private void log(Object argument, RequestTag requestTag, RequestData requestData, String wrapperClassName) {
-        if (LOGGER.isLoggable(Level.FINE)) {
-            LOGGER.log(Level.FINE, "Class name is {0}, hash code is {1}, requestTag is {2}, "
-                            + "requestData is {3}, will be converted to {4}.",
-                    new Object[]{argument.getClass().getName(), Integer.toHexString(argument.hashCode()),
-                            requestTag, requestData, wrapperClassName});
-        }
-    }
-
-    @Override
-    public ExecuteContext after(ExecuteContext context) {
-        return context;
+public class ExecutorInterceptor extends AbstractExecutorInterceptor {
+    /**
+     * 构造方法
+     */
+    public ExecutorInterceptor() {
+        super(!PluginConfigManager.getPluginConfig(TransmitConfig.class).isEnabledThreadPool());
     }
 }
