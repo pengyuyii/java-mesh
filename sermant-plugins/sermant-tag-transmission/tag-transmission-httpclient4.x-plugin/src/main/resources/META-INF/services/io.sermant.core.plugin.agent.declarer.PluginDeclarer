@@ -14,3 +14,5 @@
 # limitations under the License.
 #
 io.sermant.tag.transmission.httpclientv4.declarers.HttpClient4xDeclarer
+io.sermant.tag.transmission.httpclientv4.declarers.ClientHttpRequestDeclarer
+io.sermant.tag.transmission.httpclientv4.declarers.FeignClientDeclarer
