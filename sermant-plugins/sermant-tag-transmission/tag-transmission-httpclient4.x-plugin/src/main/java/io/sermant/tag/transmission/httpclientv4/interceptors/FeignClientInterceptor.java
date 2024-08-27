@@ -22,10 +22,12 @@ import io.sermant.core.plugin.agent.entity.ExecuteContext;
 import io.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
 import io.sermant.core.utils.CollectionUtils;
 import io.sermant.core.utils.LogUtils;
+import io.sermant.core.utils.ReflectUtils;
 import io.sermant.core.utils.tag.TrafficUtils;
 import io.sermant.tag.transmission.config.strategy.TagKeyMatcher;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -46,6 +48,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
         Object argument = context.getArguments()[0];
         if (argument instanceof Request) {
             Request request = (Request) argument;
+            Map<String, Collection<String>> headers = request.headers();
             for (Map.Entry<String, List<String>> entry : TrafficUtils.getTrafficTag().getTag().entrySet()) {
                 String key = entry.getKey();
                 if (!TagKeyMatcher.isMatch(key)) {
@@ -56,18 +59,21 @@ public class FeignClientInterceptor extends AbstractInterceptor {
                 // The server side converts the label value to list storage when it is not null. If it is null, it directly
                 // puts null. Therefore, if the client side values are empty, they must be null.
                 if (CollectionUtils.isEmpty(values)) {
-                    request.header(key, "");
+                    setHeaders(headers, key, Collections.emptyList());
                     LOGGER.log(Level.FINE, "Traffic tag {0} have been injected to feign client.", entry);
                     continue;
                 }
-                for (String value : values) {
-                    request.header(key, value);
-                }
+                setHeaders(headers, key, values);
                 LOGGER.log(Level.FINE, "Traffic tag {0}={1} have been injected to feign client.", new Object[]{key,
                         values});
             }
+            ReflectUtils.setFieldValue(request, "headers", headers);
         }
         return context;
+    }
+
+    private void setHeaders(Map<String, Collection<String>> headers, String key, List<String> values) {
+        headers.put(key, values);
     }
 
     @Override
