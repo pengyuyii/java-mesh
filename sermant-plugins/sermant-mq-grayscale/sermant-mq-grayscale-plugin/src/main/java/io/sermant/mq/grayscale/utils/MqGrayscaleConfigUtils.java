@@ -271,10 +271,10 @@ public class MqGrayscaleConfigUtils {
      */
     public static List<GrayTagItem> getGrayTagItemByExcludeGroupTags() {
         MqGrayscaleConfig mqGrayscaleConfig = getGrayscaleConfigs();
-        if (mqGrayscaleConfig.getBase() == null || mqGrayscaleConfig.getBase().getExcludeGroupTags().isEmpty()) {
-            return Collections.emptyList();
-        }
         List<GrayTagItem> result = new ArrayList<>();
+        if (mqGrayscaleConfig.getBase() == null || mqGrayscaleConfig.getBase().getExcludeGroupTags().isEmpty()) {
+            return result;
+        }
         for (String excludeGroupTag : mqGrayscaleConfig.getBase().getExcludeGroupTags()) {
             if (mqGrayscaleConfig.getGrayTagByGroupTag(excludeGroupTag).isPresent()) {
                 result.add(mqGrayscaleConfig.getGrayTagByGroupTag(excludeGroupTag).get());

@@ -28,6 +28,7 @@ import io.sermant.tag.transmission.config.strategy.TagKeyMatcher;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -48,7 +49,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
         Object argument = context.getArguments()[0];
         if (argument instanceof Request) {
             Request request = (Request) argument;
-            Map<String, Collection<String>> headers = request.headers();
+            Map<String, Collection<String>> headers = new HashMap<>(request.headers());
             for (Map.Entry<String, List<String>> entry : TrafficUtils.getTrafficTag().getTag().entrySet()) {
                 String key = entry.getKey();
                 if (!TagKeyMatcher.isMatch(key)) {
