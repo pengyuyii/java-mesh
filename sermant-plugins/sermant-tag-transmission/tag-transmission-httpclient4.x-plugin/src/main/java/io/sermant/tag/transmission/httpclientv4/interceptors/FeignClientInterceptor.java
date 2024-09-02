@@ -49,6 +49,11 @@ public class FeignClientInterceptor extends AbstractInterceptor {
         Object argument = context.getArguments()[0];
         if (argument instanceof Request) {
             Request request = (Request) argument;
+            LOGGER.log(Level.INFO, "current feign client request path======>{0}", request.url());
+            LOGGER.log(Level.INFO, "current traffic======>{0}", TrafficUtils.getTrafficTag());
+            if (TrafficUtils.getTrafficTag() != null) {
+                LOGGER.log(Level.INFO, "current tag======>{0}", TrafficUtils.getTrafficTag().getTag());
+            }
             Map<String, Collection<String>> headers = new HashMap<>(request.headers());
             for (Map.Entry<String, List<String>> entry : TrafficUtils.getTrafficTag().getTag().entrySet()) {
                 String key = entry.getKey();
