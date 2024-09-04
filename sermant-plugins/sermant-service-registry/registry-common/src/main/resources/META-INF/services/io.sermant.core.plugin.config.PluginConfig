@@ -18,3 +18,4 @@ io.sermant.registry.config.RegisterConfig
 io.sermant.registry.config.GraceConfig
 io.sermant.registry.config.NacosRegisterConfig
 io.sermant.registry.config.RegisterServiceCommonConfig
+io.sermant.registry.config.SpecialRemoveConfig
