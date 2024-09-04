@@ -45,15 +45,13 @@ public class FeignClientInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext before(ExecuteContext context) {
-        LogUtils.printHttpRequestBeforePoint(context);
         Object argument = context.getArguments()[0];
+        if (TrafficUtils.getTrafficTag() == null || TrafficUtils.getTrafficTag().getTag() == null) {
+            return context;
+        }
         if (argument instanceof Request) {
             Request request = (Request) argument;
-            LOGGER.log(Level.INFO, "current feign client request path======>{0}", request.url());
-            LOGGER.log(Level.INFO, "current traffic======>{0}", TrafficUtils.getTrafficTag());
-            if (TrafficUtils.getTrafficTag() != null) {
-                LOGGER.log(Level.INFO, "current tag======>{0}", TrafficUtils.getTrafficTag().getTag());
-            }
+            LOGGER.log(Level.INFO, "feign client request url======>{0}", request.url());
             Map<String, Collection<String>> headers = new HashMap<>(request.headers());
             for (Map.Entry<String, List<String>> entry : TrafficUtils.getTrafficTag().getTag().entrySet()) {
                 String key = entry.getKey();
@@ -74,6 +72,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
                         values});
             }
             ReflectUtils.setFieldValue(request, "headers", headers);
+            LOGGER.log(Level.INFO, "feign client request headers after refactor======>{0}", request.headers());
         }
         return context;
     }

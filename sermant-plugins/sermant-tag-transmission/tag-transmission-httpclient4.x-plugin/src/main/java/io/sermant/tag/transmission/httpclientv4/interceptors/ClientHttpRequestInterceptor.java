@@ -43,6 +43,9 @@ public class ClientHttpRequestInterceptor extends AbstractInterceptor {
     @Override
     public ExecuteContext before(ExecuteContext context) {
         Object obj = context.getObject();
+        if (TrafficUtils.getTrafficTag() == null || TrafficUtils.getTrafficTag().getTag() == null) {
+            return context;
+        }
         if (obj instanceof HttpRequest) {
             HttpRequest request = (HttpRequest) obj;
             HttpHeaders headers = request.getHeaders();
