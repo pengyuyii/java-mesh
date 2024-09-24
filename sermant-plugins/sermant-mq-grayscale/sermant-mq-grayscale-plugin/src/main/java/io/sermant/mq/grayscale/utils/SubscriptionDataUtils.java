@@ -66,7 +66,7 @@ public class SubscriptionDataUtils {
 
     private static final String CONSUME_TYPE_BASE = "base";
 
-    private static final Pattern PATTERN = Pattern.compile("and|or", Pattern.CASE_INSENSITIVE);
+    private static final Pattern PATTERN = Pattern.compile(" and | or ", Pattern.CASE_INSENSITIVE);
 
     private static final Logger LOGGER = LoggerFactory.getLogger();
 
