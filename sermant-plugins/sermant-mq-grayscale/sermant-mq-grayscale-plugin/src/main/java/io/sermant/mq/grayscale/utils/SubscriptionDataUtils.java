@@ -139,7 +139,7 @@ public class SubscriptionDataUtils {
         if (!StringUtils.isBlank(originSubDataBak)) {
             originSubDataBak = rebuildWithoutGrayTagSubData(originSubDataBak);
         }
-        String sql92Expression = buildSql92Expression(addrTopicGroupKey);
+        String sql92Expression = buildSql92Expression(addrTopicGroupKey, StringUtils.isBlank(originSubDataBak));
         if (StringUtils.isBlank(sql92Expression)) {
             return originSubDataBak;
         }
@@ -147,26 +147,26 @@ public class SubscriptionDataUtils {
                 ? sql92Expression : originSubDataBak + AND_SPLICE_STR + sql92Expression;
     }
 
-    private static String buildSql92Expression(String addrTopicGroupKey) {
+    private static String buildSql92Expression(String addrTopicGroupKey, boolean isOriginSubEmpty) {
         StringBuilder sb = new StringBuilder();
         if (StringUtils.isEmpty(MqGrayscaleConfigUtils.getGrayGroupTag())) {
             // base model return without exclude group message
             if (CONSUME_TYPE_BASE.equals(MqGrayscaleConfigUtils.getConsumeType())) {
                 List<GrayTagItem> items = MqGrayscaleConfigUtils.getGrayTagItemByExcludeGroupTags();
                 if (!items.isEmpty()) {
-                    sb.append(buildBaseConsumerSql92Expression(items));
+                    sb.append(buildBaseConsumerSql92Expression(items, isOriginSubEmpty));
                 }
                 return sb.toString();
             }
 
             // auto model return without exclude group and current consume message gray group message
-            sb.append(buildBaseConsumerSql92Expression(getAutoTypeGrayTagItems(addrTopicGroupKey)));
+            sb.append(buildBaseConsumerSql92Expression(getAutoTypeGrayTagItems(addrTopicGroupKey), isOriginSubEmpty));
         } else {
             MqGrayscaleConfig mqGrayscaleConfig = MqGrayscaleConfigUtils.getGrayscaleConfigs();
             Optional<GrayTagItem> grayTagItem
                     = mqGrayscaleConfig.getGrayTagByGroupTag(MqGrayscaleConfigUtils.getGrayGroupTag());
             if (grayTagItem.isPresent()) {
-                sb.append(buildGrayConsumerSql92Expression(grayTagItem.get()));
+                sb.append(buildGrayConsumerSql92Expression(grayTagItem.get(), isOriginSubEmpty));
             } else {
                 LOGGER.warning(String.format(Locale.ENGLISH, "current gray group [%s] had not set grayscale, set it "
                         + "and restart service to valid.", MqGrayscaleConfigUtils.getGrayGroupTag()));
@@ -184,13 +184,13 @@ public class SubscriptionDataUtils {
         return excludeItems;
     }
 
-    private static String buildGrayConsumerSql92Expression(GrayTagItem item) {
+    private static String buildGrayConsumerSql92Expression(GrayTagItem item, boolean isOriginSubEmpty) {
         Map<String, List<String>> trafficTagMap = new HashMap<>();
         for (Map.Entry<String, String> entry : item.getTrafficTag().entrySet()) {
             buildTrafficTagMap(trafficTagMap, entry);
         }
         StringBuilder builder = new StringBuilder();
-        if (trafficTagMap.size() > 1) {
+        if (trafficTagMap.size() > 1 || (!trafficTagMap.isEmpty() && !isOriginSubEmpty)) {
             builder.append(LEFT_BRACKET);
         }
         for (Map.Entry<String, List<String>> envEntry : trafficTagMap.entrySet()) {
@@ -203,13 +203,13 @@ public class SubscriptionDataUtils {
                     .append(getStrForSets(new HashSet<>(envEntry.getValue())))
                     .append(RIGHT_BRACKET);
         }
-        if (trafficTagMap.size() > 1) {
+        if (trafficTagMap.size() > 1 || (!trafficTagMap.isEmpty() && !isOriginSubEmpty)) {
             builder.append(RIGHT_BRACKET);
         }
         return builder.toString();
     }
 
-    private static String buildBaseConsumerSql92Expression(List<GrayTagItem> items) {
+    private static String buildBaseConsumerSql92Expression(List<GrayTagItem> items, boolean isOriginSubEmpty) {
         Map<String, List<String>> trafficTagMap = new HashMap<>();
         for (GrayTagItem item : items) {
             for (Map.Entry<String, String> entry : item.getTrafficTag().entrySet()) {
@@ -217,7 +217,7 @@ public class SubscriptionDataUtils {
             }
         }
         StringBuilder builder = new StringBuilder();
-        if (trafficTagMap.size() > 1) {
+        if (trafficTagMap.size() > 1 || (!trafficTagMap.isEmpty() && !isOriginSubEmpty)) {
             builder.append(LEFT_BRACKET);
         }
         for (Map.Entry<String, List<String>> envEntry : trafficTagMap.entrySet()) {
@@ -241,7 +241,7 @@ public class SubscriptionDataUtils {
                 builder.append(RIGHT_BRACKET);
             }
         }
-        if (trafficTagMap.size() > 1) {
+        if (trafficTagMap.size() > 1 || (!trafficTagMap.isEmpty() && !isOriginSubEmpty)) {
             builder.append(RIGHT_BRACKET);
         }
         return builder.toString();

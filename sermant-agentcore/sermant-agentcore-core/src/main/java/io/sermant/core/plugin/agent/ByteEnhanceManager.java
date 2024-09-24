@@ -22,6 +22,7 @@ import io.sermant.core.plugin.agent.collector.PluginCollector;
 import io.sermant.core.plugin.agent.config.AgentConfig;
 import io.sermant.core.plugin.agent.declarer.PluginDescription;
 import io.sermant.core.plugin.agent.enhance.ClassLoaderDeclarer;
+import io.sermant.core.plugin.agent.enhance.WebappClassLoaderDeclarer;
 import io.sermant.core.service.ServiceConfig;
 import io.sermant.core.utils.FileUtils;
 
@@ -134,6 +135,7 @@ public class ByteEnhanceManager {
     private static void enhanceForInjectService() {
         if (ConfigManager.getConfig(ServiceConfig.class).isInjectEnable()) {
             builder.addEnhance(new ClassLoaderDeclarer());
+            builder.addEnhance(new WebappClassLoaderDeclarer());
         }
     }
 }
