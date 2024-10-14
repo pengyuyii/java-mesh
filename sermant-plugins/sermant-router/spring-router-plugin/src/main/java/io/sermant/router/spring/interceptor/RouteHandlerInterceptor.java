@@ -72,12 +72,21 @@ public class RouteHandlerInterceptor implements HandlerInterceptor {
             return true;
         }
         Map<String, List<String>> headers = getHeaders(request);
-        Map<String, String[]> parameterMap = request.getParameterMap();
+        Map<String, String[]> parameterMap = new HashMap<>();
+        if (!isFormDataPostRequest(request, headers)) {
+            parameterMap = request.getParameterMap();
+        }
         String path = request.getRequestURI();
         String method = request.getMethod();
+        Map<String, String[]> finalParameterMap = parameterMap;
         handlers.forEach(handler -> ThreadLocalUtils.addRequestTag(
-                handler.getRequestTag(path, method, headers, parameterMap, new Keys(matchKeys, injectTags))));
+                handler.getRequestTag(path, method, headers, finalParameterMap, new Keys(matchKeys, injectTags))));
         return true;
+    }
+
+    private boolean isFormDataPostRequest(HttpServletRequest request, Map<String, List<String>> headers) {
+        return "POST".equalsIgnoreCase(request.getMethod()) && headers.get("content-type") != null
+            && headers.get("content-type").contains("application/x-www-form-urlencoded");
     }
 
     @Override
