@@ -158,8 +158,8 @@ public class MqConsumerGroupAutoCheck {
                     }
                 } catch (RemotingConnectException | RemotingSendRequestException | RemotingTimeoutException
                          | MQBrokerException | InterruptedException e) {
-                    LOGGER.warning(String.format(Locale.ENGLISH, "[auto-check] can not find ids in group: [%s].",
-                            group));
+                    LOGGER.log(Level.FINE, String.format(Locale.ENGLISH, "[auto-check] can not find ids "
+                        + "in group: [%s].", group));
                 }
             }
             resetAutoCheckGrayTagItems(grayTags, clientConfig);

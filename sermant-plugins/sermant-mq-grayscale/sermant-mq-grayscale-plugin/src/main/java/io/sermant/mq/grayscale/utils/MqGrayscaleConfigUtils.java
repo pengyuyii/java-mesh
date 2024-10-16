@@ -16,6 +16,7 @@
 
 package io.sermant.mq.grayscale.utils;
 
+import io.sermant.core.common.LoggerFactory;
 import io.sermant.core.config.ConfigManager;
 import io.sermant.core.plugin.config.ServiceMeta;
 import io.sermant.core.service.dynamicconfig.common.DynamicConfigEventType;
@@ -36,6 +37,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * grayscale config util
@@ -53,6 +56,8 @@ public class MqGrayscaleConfigUtils {
      * auto consumerType
      */
     public static final String CONSUME_TYPE_AUTO = "auto";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger();
 
     /**
      * config cache key
@@ -240,7 +245,12 @@ public class MqGrayscaleConfigUtils {
      */
     public static void setUserPropertyByTrafficTag(Message message) {
         if (!CACHE_CONFIG.get(CACHE_CONFIG_KEY).isEnabled() || getTrafficTag().isEmpty()) {
+            LOGGER.log(Level.FINE, message.getTopic() + "====setUserPropertyByTrafficTag trafficTags is null====");
             return;
+        }
+        for (Map.Entry<String, String> entry : getTrafficTag().entrySet()) {
+            LOGGER.log(Level.FINE,message.getTopic() + "====tag trafficTag key========" + entry.getKey()
+                + ",value========" + entry.getValue());
         }
         MqGrayscaleConfig mqGrayscaleConfig = CACHE_CONFIG.get(CACHE_CONFIG_KEY);
         if (mqGrayscaleConfig == null) {

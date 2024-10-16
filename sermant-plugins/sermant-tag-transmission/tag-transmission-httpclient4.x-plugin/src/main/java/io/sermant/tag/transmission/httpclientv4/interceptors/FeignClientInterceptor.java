@@ -51,7 +51,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
         }
         if (argument instanceof Request) {
             Request request = (Request) argument;
-            LOGGER.log(Level.INFO, "feign client request url======>{0}", request.url());
+            LOGGER.log(Level.FINE, "feign client request url======>{0}", request.url());
             Map<String, Collection<String>> headers = new HashMap<>(request.headers());
             for (Map.Entry<String, List<String>> entry : TrafficUtils.getTrafficTag().getTag().entrySet()) {
                 String key = entry.getKey();
@@ -64,7 +64,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
                 // puts null. Therefore, if the client side values are empty, they must be null.
                 if (CollectionUtils.isEmpty(values)) {
                     setHeaders(headers, key, Collections.emptyList());
-                    LOGGER.log(Level.FINE, "Traffic tag {0} have been injected to feign client.", entry);
+                    LOGGER.log(Level.FINE, "Traffic tag {0} has no values.", entry);
                     continue;
                 }
                 setHeaders(headers, key, values);
@@ -72,7 +72,7 @@ public class FeignClientInterceptor extends AbstractInterceptor {
                         values});
             }
             ReflectUtils.setFieldValue(request, "headers", headers);
-            LOGGER.log(Level.INFO, "feign client request headers after refactor======>{0}", request.headers());
+            LOGGER.log(Level.FINE, "feign client request headers after refactor======>{0}", request.headers());
         }
         return context;
     }
