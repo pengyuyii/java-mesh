@@ -22,4 +22,4 @@ grayscale.mq.config:
     autoCheckDelayTime: 15
     # tag of the gray consumer group to be excluded, corresponding value is above consumerGroupTag value
     # auto/base consumer type all effective
-    excludeGroupTags: ["red", "gray"]
+    excludeGroupTags: ["gray"]
