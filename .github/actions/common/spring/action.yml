@@ -57,11 +57,24 @@ runs:
         key: ${{ runner.os }}-agent-${{ github.run_id }}
     - name: plugin change check
       uses: ./.github/actions/common/plugin-change-check
+    - name: change feign version
+      shell: bash
+      if: matrix.springCloudVersion != '2022.0.0' && matrix.springCloudVersion != '2022.0.1' && matrix.springCloudVersion != '2022.0.2'
+      run: |
+        sed -i 's/org.apache.httpcomponents/org.apache.httpcomponents.client5/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/pom.xml
+        sed -i 's/httpclient/httpclient5/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/pom.xml
+        sed -i 's/org.apache.http.conn/org.apache.hc.client5.http/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration/FeignClientSslConfigurationHighVersion.java.highVersion
     - name: change file version
       # For build feign client ssl call config, according to springCloud version discriminate high and low config.
-      if: matrix.springCloudVersion == '2020.0.0' || matrix.springCloudVersion == '2021.0.0' || matrix.springCloudVersion == '2021.0.3'
       shell: bash
       run: |
         mv sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration/FeignClientSslConfigurationLowVersion.java sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration/FeignClientSslConfigurationLowVersion.java.lowVersion
         mv sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration/FeignClientSslConfigurationHighVersion.java.highVersion sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration/FeignClientSslConfigurationHighVersion.java
         ls sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/configuration
+        sed -i 's/qualifier/qualifiers/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/FeignService.java
+        sed -i 's/qualifier/qualifiers/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-api/src/main/java/com/huaweicloud/spring/feign/api/RemovalService.java
+        sed -i 's/javax.servlet.http/jakarta.servlet.http/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-feign/feign-provider/src/main/java/com/huaweicloud/spring/feign/provider/FeignServiceImpl.java
+        sed -i 's/javax.servlet.http/jakarta.servlet.http/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-provider/src/main/java/com/huaweicloud/spring/rest/provider/RouterController.java
+        sed -i 's/javax.annotation/jakarta.annotation/' sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-consumer/src/main/java/com/huaweicloud/spring/rest/consumer/BootRegistryHttpClientController.java
+        mv sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-consumer/src/main/java/com/huaweicloud/spring/rest/consumer/FlowcontrolConiguration.java sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-consumer/src/main/java/com/huaweicloud/spring/rest/consumer/FlowcontrolConiguration.java.spring
+        mv sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-consumer/src/main/java/com/huaweicloud/spring/rest/consumer/FlowcontrolConiguration.java.springboot3 sermant-integration-tests/spring-test/spring-common-demos/spring-common-resttemplate/rest-consumer/src/main/java/com/huaweicloud/spring/rest/consumer/FlowcontrolConiguration.java

@@ -17,8 +17,6 @@
 
 package com.huaweicloud.spring.common.flowcontrol.consumer;
 
-import com.huaweicloud.spring.common.flowcontrol.handlers.RestTemplateResponseErrorHandler;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -32,8 +30,6 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Locale;
-
-import javax.annotation.PostConstruct;
 
 /**
  * 流控服务端测试
@@ -53,14 +49,6 @@ public class ServerController {
 
     @Autowired
     private RestTemplate restTemplate;
-
-    /**
-     * 初始化
-     */
-    @PostConstruct
-    public void init() {
-        restTemplate.setErrorHandler(new RestTemplateResponseErrorHandler());
-    }
 
     /**
      * 限流测试
