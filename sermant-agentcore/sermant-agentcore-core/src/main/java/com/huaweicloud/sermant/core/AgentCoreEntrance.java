@@ -85,10 +85,11 @@ public class AgentCoreEntrance {
             agentType = AgentType.AGENTMAIN.getValue();
         }
         artifactCache = artifact;
-        adviserCache = new DefaultAdviser();
 
         // 初始化默认日志，在未加载日志引擎前保证日志可用
         LoggerFactory.initDefaultLogger(artifact);
+
+        adviserCache = new DefaultAdviser();
 
         // 初始化框架类加载器
         ClassLoaderManager.init(argsMap);

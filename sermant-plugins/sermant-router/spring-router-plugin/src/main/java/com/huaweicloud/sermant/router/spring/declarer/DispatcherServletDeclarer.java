@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (C) 2022-2024 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,23 +19,24 @@ package com.huaweicloud.sermant.router.spring.declarer;
 import com.huaweicloud.sermant.core.plugin.agent.matcher.ClassMatcher;
 
 /**
- * 通过拦截增加注入拦截器，注入spring web拦截器
+ * 获取http请求数据
  *
  * @author provenceee
  * @since 2022-07-12
  */
-public class HandlerExecutionChainDeclarer extends AbstractDeclarer {
-    private static final String ENHANCE_CLASS = "org.springframework.web.servlet.HandlerExecutionChain";
+public class DispatcherServletDeclarer extends AbstractDeclarer {
+    private static final String ENHANCE_CLASS
+            = "org.springframework.web.servlet.DispatcherServlet";
 
     private static final String INTERCEPT_CLASS
-            = "com.huaweicloud.sermant.router.spring.interceptor.HandlerExecutionChainInterceptor";
+            = "com.huaweicloud.sermant.router.spring.interceptor.DispatcherServletInterceptor";
 
-    private static final String METHOD_NAME = "applyPreHandle";
+    private static final String METHOD_NAME = "doService";
 
     /**
      * 构造方法
      */
-    public HandlerExecutionChainDeclarer() {
+    public DispatcherServletDeclarer() {
         super(ENHANCE_CLASS, INTERCEPT_CLASS, METHOD_NAME);
     }
 

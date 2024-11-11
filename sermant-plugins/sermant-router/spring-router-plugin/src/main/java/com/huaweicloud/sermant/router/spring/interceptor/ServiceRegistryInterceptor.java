@@ -66,6 +66,7 @@ public class ServiceRegistryInterceptor extends AbstractInterceptor {
                         serviceRegistration.getClass().getDeclaredMethod("getRegistration"))
                         .invoke(serviceRegistration);
                 AppCache.INSTANCE.setAppName(registration.getServiceId());
+                configService.init(RouterConstant.SPRING_CACHE_NAME, registration.getServiceId());
                 SpringRouterUtils.putMetaData(registration.getMetadata(), routerConfig);
             } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException ex) {
                 LOGGER.log(Level.WARNING, "Can not get the registration.", ex);
@@ -76,7 +77,6 @@ public class ServiceRegistryInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        configService.init(RouterConstant.SPRING_CACHE_NAME, AppCache.INSTANCE.getAppName());
         return context;
     }
 }

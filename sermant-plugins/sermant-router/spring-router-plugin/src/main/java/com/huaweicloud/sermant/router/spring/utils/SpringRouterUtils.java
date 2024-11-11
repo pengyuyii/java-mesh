@@ -22,6 +22,7 @@ import com.huaweicloud.sermant.router.common.utils.CollectionUtils;
 import com.huaweicloud.sermant.router.common.utils.ReflectUtils;
 import com.huaweicloud.sermant.router.spring.cache.AppCache;
 
+import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,6 +38,57 @@ public class SpringRouterUtils {
     private static final String ZONE_KEY = "zone";
 
     private SpringRouterUtils() {
+    }
+
+    /**
+     * 获取请求中的parameter
+     *
+     * @param obj HttpServletRequest
+     * @return parameter
+     */
+    public static Map<String, String[]> getParameterMap(Object obj) {
+        return (Map<String, String[]>) ReflectUtils.invokeWithNoneParameter(obj, "getParameterMap");
+    }
+
+    /**
+     * 获取请求中的uri
+     *
+     * @param obj HttpServletRequest
+     * @return uri
+     */
+    public static String getRequestUri(Object obj) {
+        return ReflectUtils.invokeWithNoneParameterAndReturnString(obj, "getRequestURI");
+    }
+
+    /**
+     * 获取请求中的方法
+     *
+     * @param obj HttpServletRequest
+     * @return method
+     */
+    public static String getMethod(Object obj) {
+        return ReflectUtils.invokeWithNoneParameterAndReturnString(obj, "getMethod");
+    }
+
+    /**
+     * 获取请求中的所有请求头的key
+     *
+     * @param obj HttpServletRequest
+     * @return key
+     */
+    public static Enumeration<?> getHeaderNames(Object obj) {
+        return (Enumeration<?>) ReflectUtils.invokeWithNoneParameter(obj, "getHeaderNames");
+    }
+
+    /**
+     * 获取元数据
+     *
+     * @param obj HttpServletRequest
+     * @param key header key
+     * @return 元数据
+     */
+    public static Enumeration<?> getHeaders(Object obj, String key) {
+        return (Enumeration<?>) ReflectUtils.invokeWithParameter(obj, "getHeaders", key, String.class);
     }
 
     /**

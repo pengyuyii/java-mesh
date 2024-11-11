@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (C) 2022-2024 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package com.huaweicloud.sermant.router.spring.interceptor;
 
+import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.service.ServiceManager;
+import com.huaweicloud.sermant.router.common.request.RequestData;
 import com.huaweicloud.sermant.router.common.request.RequestTag;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
 import com.huaweicloud.sermant.router.spring.BaseTransmitConfigTest;
@@ -38,17 +40,21 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 测试RouteHandlerInterceptor
+ * 测试DispatcherServletInterceptorTest
  *
  * @author provenceee
  * @since 2022-09-07
  */
-public class RouteHandlerInterceptorTest extends BaseTransmitConfigTest {
-    private final RouteHandlerInterceptor interceptor;
+public class DispatcherServletInterceptorTest extends BaseTransmitConfigTest {
+    private final DispatcherServletInterceptor interceptor;
 
     private static TestSpringConfigService configService;
 
     private static MockedStatic<ServiceManager> mockServiceManager;
+
+    private final ExecuteContext context;
+
+    private final MockHttpServletRequest request;
 
     /**
      * UT执行前进行mock
@@ -69,8 +75,12 @@ public class RouteHandlerInterceptorTest extends BaseTransmitConfigTest {
         mockServiceManager.close();
     }
 
-    public RouteHandlerInterceptorTest() {
-        interceptor = new RouteHandlerInterceptor();
+    public DispatcherServletInterceptorTest() throws NoSuchMethodException {
+        interceptor = new DispatcherServletInterceptor();
+        request = new MockHttpServletRequest();
+        Object[] arguments = new Object[]{request};
+        context = ExecuteContext.forMemberMethod(new Object(), String.class.getMethod("trim"), arguments, null,
+                null);
     }
 
     /**
@@ -83,11 +93,10 @@ public class RouteHandlerInterceptorTest extends BaseTransmitConfigTest {
     }
 
     /**
-     * 测试preHandle方法
+     * 测试before方法
      */
     @Test
-    public void testPreHandle() {
-        MockHttpServletRequest request = new MockHttpServletRequest();
+    public void testBefore() {
         request.addHeader("bar", "bar1");
         request.addHeader("foo", "foo1");
         request.addHeader("foo2", "foo2");
@@ -97,13 +106,13 @@ public class RouteHandlerInterceptorTest extends BaseTransmitConfigTest {
         // 测试keys全为空
         configService.setReturnEmptyWhenGetMatchTags(true);
         configService.setReturnEmptyWhenGetMatchKeys(true);
-        interceptor.preHandle(request, response, obj);
+        interceptor.before(context);
         Assert.assertNull(ThreadLocalUtils.getRequestTag());
 
         // 测试preHandle方法，getMatchKeys不为空
         configService.setReturnEmptyWhenGetMatchTags(true);
         configService.setReturnEmptyWhenGetMatchKeys(false);
-        interceptor.preHandle(request, response, obj);
+        interceptor.before(context);
         RequestTag requestTag = ThreadLocalUtils.getRequestTag();
         Map<String, List<String>> header = requestTag.getTag();
         Assert.assertNotNull(header);
@@ -113,15 +122,32 @@ public class RouteHandlerInterceptorTest extends BaseTransmitConfigTest {
     }
 
     /**
-     * 测试afterCompletion,验证是否释放线程变量
+     * 测试after,验证是否释放线程变量
      */
     @Test
-    public void testAfterCompletion() {
+    public void testAfter() {
         ThreadLocalUtils.addRequestTag(Collections.singletonMap("bar", Collections.singletonList("foo")));
+        ThreadLocalUtils.setRequestData(new RequestData(Collections.emptyMap(), "", ""));
         Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
 
-        // 测试afterCompletion,验证是否释放线程变量
-        interceptor.afterCompletion(new MockHttpServletRequest(), new MockHttpServletResponse(), new Object(), null);
+        // 测试after,验证是否释放线程变量
+        interceptor.after(context);
         Assert.assertNull(ThreadLocalUtils.getRequestTag());
+        Assert.assertNull(ThreadLocalUtils.getRequestData());
+    }
+
+    /**
+     * 测试onThrow,验证是否释放线程变量
+     */
+    @Test
+    public void testOnThrow() {
+        ThreadLocalUtils.addRequestTag(Collections.singletonMap("bar", Collections.singletonList("foo")));
+        ThreadLocalUtils.setRequestData(new RequestData(Collections.emptyMap(), "", ""));
+        Assert.assertNotNull(ThreadLocalUtils.getRequestTag());
+
+        // 测试onThrow,验证是否释放线程变量
+        interceptor.onThrow(context);
+        Assert.assertNull(ThreadLocalUtils.getRequestTag());
+        Assert.assertNull(ThreadLocalUtils.getRequestData());
     }
 }

@@ -59,6 +59,7 @@ public class DiscoveryManagerInterceptor extends AbstractInterceptor {
             Object serviceName = ReflectUtils.getFieldValue(obj, "serviceName").orElse(null);
             if (serviceName instanceof String) {
                 AppCache.INSTANCE.setAppName((String) serviceName);
+                configService.init(RouterConstant.SPRING_CACHE_NAME, (String) serviceName);
             } else {
                 LOGGER.warning("Service name is null or not instanceof string.");
             }
@@ -69,7 +70,6 @@ public class DiscoveryManagerInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        configService.init(RouterConstant.SPRING_CACHE_NAME, AppCache.INSTANCE.getAppName());
         return context;
     }
 }
