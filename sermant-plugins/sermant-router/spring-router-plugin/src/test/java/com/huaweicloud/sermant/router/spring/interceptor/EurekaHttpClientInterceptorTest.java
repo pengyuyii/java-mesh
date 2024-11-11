@@ -111,15 +111,6 @@ public class EurekaHttpClientInterceptorTest {
         Assert.assertEquals(routerConfig.getRouterVersion(), metadata.get("version"));
         Assert.assertEquals("bar1", metadata.get("bar"));
         Assert.assertEquals("foo2", metadata.get("foo"));
-    }
-
-    /**
-     * 测试after方法
-     */
-    @Test
-    public void testAfter() {
-        AppCache.INSTANCE.setAppName("FOO");
-        interceptor.after(context);
         Assert.assertEquals(RouterConstant.SPRING_CACHE_NAME, configService.getCacheName());
         Assert.assertEquals("FOO", configService.getServiceName());
     }

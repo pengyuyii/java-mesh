@@ -104,15 +104,6 @@ public class DiscoveryManagerInterceptorTest {
         context.getArguments()[0] = new TestObject(null);
         interceptor.before(context);
         Assert.assertEquals("foo", AppCache.INSTANCE.getAppName());
-    }
-
-    /**
-     * 测试after方法
-     */
-    @Test
-    public void testAfter() {
-        AppCache.INSTANCE.setAppName("foo");
-        interceptor.after(context);
         Assert.assertEquals(RouterConstant.SPRING_CACHE_NAME, configService.getCacheName());
         Assert.assertEquals("foo", configService.getServiceName());
     }

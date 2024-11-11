@@ -53,6 +53,7 @@ public class EurekaHttpClientInterceptor extends AbstractInterceptor {
         if (argument instanceof InstanceInfo) {
             InstanceInfo instanceInfo = (InstanceInfo) argument;
             AppCache.INSTANCE.setAppName(instanceInfo.getAppName());
+            configService.init(RouterConstant.SPRING_CACHE_NAME, instanceInfo.getAppName());
             SpringRouterUtils.putMetaData(instanceInfo.getMetadata(), routerConfig);
         }
         return context;
@@ -60,7 +61,6 @@ public class EurekaHttpClientInterceptor extends AbstractInterceptor {
 
     @Override
     public ExecuteContext after(ExecuteContext context) {
-        configService.init(RouterConstant.SPRING_CACHE_NAME, AppCache.INSTANCE.getAppName());
         return context;
     }
 }
