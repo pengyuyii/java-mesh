@@ -25,6 +25,10 @@ import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor
 import com.huaweicloud.sermant.core.utils.LogUtils;
 import com.huaweicloud.sermant.core.utils.ReflectUtils;
 
+import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * HTTP拦截定义
  *
@@ -33,6 +37,15 @@ import com.huaweicloud.sermant.core.utils.ReflectUtils;
  */
 public class DispatcherServletInterceptor extends AbstractInterceptor {
     private static final String START_TIME = "startTime";
+
+    private Function<Object, String> getRequestUri;
+
+    /**
+     * 构造方法
+     */
+    public DispatcherServletInterceptor() {
+        initFunction();
+    }
 
     @Override
     public ExecuteContext before(ExecuteContext context) {
@@ -50,7 +63,7 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
             LogUtils.printHttpRequestAfterPoint(context);
             return context;
         }
-        String uri = getRequestUri(context.getArguments()[0]);
+        String uri = getRequestUri.apply(context.getArguments()[0]);
         MetricCalEntity metricCalEntity = MonitorCacheUtil.getMetricCalEntity(uri);
         metricCalEntity.getReqNum().incrementAndGet();
         long startTime = (Long) context.getExtMemberFieldValue(START_TIME);
@@ -70,7 +83,7 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
             LogUtils.printHttpRequestOnThrowPoint(context);
             return context;
         }
-        String uri = getRequestUri(context.getArguments()[0]);
+        String uri = getRequestUri.apply(context.getArguments()[0]);
         MetricCalEntity metricCalEntity = MonitorCacheUtil.getMetricCalEntity(uri);
         metricCalEntity.getReqNum().incrementAndGet();
         metricCalEntity.getFailedReqNum().incrementAndGet();
@@ -80,5 +93,23 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
 
     private String getRequestUri(Object httpServletRequest) {
         return (String) ReflectUtils.invokeMethodWithNoneParameter(httpServletRequest, "getRequestURI").orElse(null);
+    }
+
+    private void initFunction() {
+        boolean canLoadLowVersion = canLoadLowVersion();
+        if (canLoadLowVersion) {
+            getRequestUri = obj -> ((HttpServletRequest) obj).getRequestURI();
+        } else {
+            getRequestUri = this::getRequestUri;
+        }
+    }
+
+    private boolean canLoadLowVersion() {
+        try {
+            Class.forName(HttpServletRequest.class.getCanonicalName());
+        } catch (NoClassDefFoundError | ClassNotFoundException error) {
+            return false;
+        }
+        return true;
     }
 }

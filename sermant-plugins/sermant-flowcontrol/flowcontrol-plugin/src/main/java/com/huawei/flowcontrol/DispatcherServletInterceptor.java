@@ -26,12 +26,19 @@ import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.utils.LogUtils;
 import com.huaweicloud.sermant.core.utils.ReflectUtils;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * DispatcherServlet 的 API接口增强 埋点定义sentinel资源
@@ -41,6 +48,28 @@ import java.util.Optional;
  */
 public class DispatcherServletInterceptor extends InterceptorSupporter {
     private final String className = DispatcherServletInterceptor.class.getName();
+
+    private Function<Object, String> getRequestUri;
+
+    private Function<Object, String> getPathInfo;
+
+    private Function<Object, String> getMethod;
+
+    private Function<Object, Enumeration<String>> getHeaderNames;
+
+    private BiFunction<Object, String, String> getHeader;
+
+    private Function<Object, PrintWriter> getWriter;
+
+    private BiConsumer<Object, Integer> setStatus;
+
+    /**
+     * 构造方法
+     */
+    public DispatcherServletInterceptor() {
+        super();
+        initFunction();
+    }
 
     /**
      * http请求数据转换 适应plugin -> service数据传递 注意，该方法不可抽出，由于宿主依赖仅可由该拦截器加载，因此抽出会导致找不到类
@@ -52,14 +81,14 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
         if (request == null) {
             return Optional.empty();
         }
-        String uri = getRequestUri(request);
+        String uri = getRequestUri.apply(request);
         return Optional.of(new HttpRequestEntity.Builder()
                 .setRequestType(RequestType.SERVER)
-                .setPathInfo(getPathInfo(request))
+                .setPathInfo(getPathInfo.apply(request))
                 .setServletPath(uri)
                 .setHeaders(getHeaders(request))
-                .setMethod(getMethod(request))
-                .setServiceName(getHeader(request, ConfigConst.FLOW_REMOTE_SERVICE_NAME_HEADER_KEY))
+                .setMethod(getMethod.apply(request))
+                .setServiceName(getHeader.apply(request, ConfigConst.FLOW_REMOTE_SERVICE_NAME_HEADER_KEY))
                 .build());
     }
 
@@ -70,11 +99,11 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
      * @return headers
      */
     private Map<String, String> getHeaders(Object request) {
-        final Enumeration<String> headerNames = getHeaderNames(request);
+        final Enumeration<String> headerNames = getHeaderNames.apply(request);
         final Map<String, String> headers = new HashMap<>();
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement();
-            headers.put(headerName, getHeader(request, headerName));
+            headers.put(headerName, getHeader.apply(request, headerName));
         }
         return Collections.unmodifiableMap(headers);
     }
@@ -94,8 +123,8 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
             context.skip(null);
             final Object response = allArguments[1];
             if (response != null) {
-                setStatus(response, result.getResponse().getCode());
-                getWriter(response).print(result.buildResponseMsg());
+                setStatus.accept(response, result.getResponse().getCode());
+                getWriter.apply(response).print(result.buildResponseMsg());
             }
         }
         return context;
@@ -148,5 +177,41 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
 
     private String getString(Object object, String method) {
         return (String) ReflectUtils.invokeMethodWithNoneParameter(object, method).orElse(null);
+    }
+
+    private void initFunction() {
+        boolean canLoadLowVersion = canLoadLowVersion();
+        if (canLoadLowVersion) {
+            getRequestUri = obj -> ((HttpServletRequest) obj).getRequestURI();
+            getPathInfo = obj -> ((HttpServletRequest) obj).getPathInfo();
+            getMethod = obj -> ((HttpServletRequest) obj).getMethod();
+            getHeaderNames = obj -> ((HttpServletRequest) obj).getHeaderNames();
+            getHeader = (obj, key) -> ((HttpServletRequest) obj).getHeader(key);
+            getWriter = obj -> {
+                try {
+                    return ((HttpServletResponse) obj).getWriter();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            };
+            setStatus = (obj, code) -> ((HttpServletResponse) obj).setStatus(code);
+        } else {
+            getRequestUri = this::getRequestUri;
+            getPathInfo = this::getPathInfo;
+            getMethod = this::getMethod;
+            getHeaderNames = this::getHeaderNames;
+            getHeader = this::getHeader;
+            getWriter = this::getWriter;
+            setStatus = this::setStatus;
+        }
+    }
+
+    private boolean canLoadLowVersion() {
+        try {
+            Class.forName(HttpServletRequest.class.getCanonicalName());
+        } catch (NoClassDefFoundError | ClassNotFoundException error) {
+            return false;
+        }
+        return true;
     }
 }

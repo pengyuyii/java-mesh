@@ -42,6 +42,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 获取http请求数据
@@ -54,6 +58,16 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
 
     private final SpringConfigService configService;
 
+    private Function<Object, String> getQueryString;
+
+    private Function<Object, String> getRequestUri;
+
+    private Function<Object, String> getMethod;
+
+    private Function<Object, Enumeration<?>> getHeaderNames;
+
+    private BiFunction<Object, String, Enumeration<?>> getHeaders;
+
     /**
      * 构造方法
      */
@@ -63,6 +77,7 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
         handlers.add(new LaneHandler());
         handlers.add(new RouteHandler());
         handlers.sort(Comparator.comparingInt(Handler::getOrder));
+        initFunction();
     }
 
     @Override
@@ -75,11 +90,11 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
         }
         Object request = context.getArguments()[0];
         Map<String, List<String>> headers = getHeaders(request);
-        String queryString = SpringRouterUtils.getQueryString(request);
+        String queryString = getQueryString.apply(request);
         String decode = Optional.ofNullable(queryString).map(this::decode).orElse(StringUtils.EMPTY);
         Map<String, List<String>> queryParams = SpringRouterUtils.getParametersByQuery(decode);
-        String path = SpringRouterUtils.getRequestUri(request);
-        String method = SpringRouterUtils.getMethod(request);
+        String path = getRequestUri.apply(request);
+        String method = getMethod.apply(request);
         handlers.forEach(handler -> ThreadLocalUtils.addRequestTag(
                 handler.getRequestTag(path, method, headers, queryParams, new Keys(matchKeys, injectTags))));
         return context;
@@ -109,10 +124,10 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
 
     private Map<String, List<String>> getHeaders(Object request) {
         Map<String, List<String>> headers = new HashMap<>();
-        Enumeration<?> enumeration = SpringRouterUtils.getHeaderNames(request);
+        Enumeration<?> enumeration = getHeaderNames.apply(request);
         while (enumeration.hasMoreElements()) {
             String key = (String) enumeration.nextElement();
-            headers.put(key, enumeration2List(SpringRouterUtils.getHeaders(request, key)));
+            headers.put(key, enumeration2List(getHeaders.apply(request, key)));
         }
         return headers;
     }
@@ -126,5 +141,31 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
             collection.add((String) enumeration.nextElement());
         }
         return collection;
+    }
+
+    private void initFunction() {
+        boolean canLoadLowVersion = canLoadLowVersion();
+        if (canLoadLowVersion) {
+            getQueryString = obj -> ((HttpServletRequest) obj).getQueryString();
+            getRequestUri = obj -> ((HttpServletRequest) obj).getRequestURI();
+            getMethod = obj -> ((HttpServletRequest) obj).getMethod();
+            getHeaderNames = obj -> ((HttpServletRequest) obj).getHeaderNames();
+            getHeaders = (obj, key) -> ((HttpServletRequest) obj).getHeaders(key);
+        } else {
+            getQueryString = SpringRouterUtils::getQueryString;
+            getRequestUri = SpringRouterUtils::getRequestUri;
+            getMethod = SpringRouterUtils::getMethod;
+            getHeaderNames = SpringRouterUtils::getHeaderNames;
+            getHeaders = SpringRouterUtils::getHeaders;
+        }
+    }
+
+    private boolean canLoadLowVersion() {
+        try {
+            Class.forName(HttpServletRequest.class.getCanonicalName());
+        } catch (NoClassDefFoundError | ClassNotFoundException error) {
+            return false;
+        }
+        return true;
     }
 }

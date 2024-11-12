@@ -36,6 +36,12 @@ import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
 import com.huaweicloud.sermant.core.utils.ReflectUtils;
 import com.huaweicloud.sermant.core.utils.StringUtils;
 
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * Spring Web请求拦截器
  *
@@ -47,12 +53,21 @@ public class DispatcherServletInterceptor extends GraceSwitchInterceptor {
 
     private final GraceConfig graceConfig;
 
+    private Consumer<Object, String, String> addHeader;
+
+    private Function<Object, Integer> getServerPort;
+
+    private Function<Object, String> getRemoteAddr;
+
+    private BiFunction<Object, String, String> getHeader;
+
     /**
      * 构造方法
      */
     public DispatcherServletInterceptor() {
         graceService = PluginServiceManager.getPluginService(GraceService.class);
         graceConfig = PluginConfigManager.getPluginConfig(GraceConfig.class);
+        initFunction();
     }
 
     @Override
@@ -70,11 +85,11 @@ public class DispatcherServletInterceptor extends GraceSwitchInterceptor {
         if (graceShutDownManager.isShutDown() && graceConfig.isEnableGraceShutdown()) {
             // 已被标记为关闭状态, 开始统计进入的请求数
             final ClientInfo clientInfo = RegisterContext.INSTANCE.getClientInfo();
-            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
+            addHeader.accept(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
                 buildEndpoint(clientInfo.getIp(), clientInfo.getPort()));
-            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
+            addHeader.accept(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
                 buildEndpoint(clientInfo.getHost(), clientInfo.getPort()));
-            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_NAME, clientInfo.getServiceName());
+            addHeader.accept(response, GraceConstants.MARK_SHUTDOWN_SERVICE_NAME, clientInfo.getServiceName());
         }
         return context;
     }
@@ -94,17 +109,17 @@ public class DispatcherServletInterceptor extends GraceSwitchInterceptor {
     private void addGraceAddress(Object request) {
         if (graceConfig.isEnableSpring() && graceConfig.isEnableGraceShutdown() && graceConfig.isEnableOfflineNotify()
             && GraceConstants.GRACE_OFFLINE_SOURCE_VALUE
-                .equals(getHeader(request, GraceConstants.GRACE_OFFLINE_SOURCE_KEY))) {
-            String address = getHeader(request, GraceConstants.SERMANT_GRACE_ADDRESS);
+                .equals(getHeader.apply(request, GraceConstants.GRACE_OFFLINE_SOURCE_KEY))) {
+            String address = getHeader.apply(request, GraceConstants.SERMANT_GRACE_ADDRESS);
             if (StringUtils.isBlank(address)) {
-                address = getRemoteAddr(request) + ":" + getServerPort(request);
+                address = getRemoteAddr.apply(request) + ":" + getServerPort.apply(request);
             }
             graceService.addAddress(address);
         }
     }
 
-    private void addHeader(Object httpServletRequest, String key, String value) {
-        ReflectUtils.invokeMethod(httpServletRequest, "addHeader", new Class[]{String.class, String.class},
+    private void addHeader(Object httpServletResponse, String key, String value) {
+        ReflectUtils.invokeMethod(httpServletResponse, "addHeader", new Class[]{String.class, String.class},
                 new Object[]{key, value});
     }
 
@@ -123,5 +138,43 @@ public class DispatcherServletInterceptor extends GraceSwitchInterceptor {
 
     private String getString(Object object, String method) {
         return (String) ReflectUtils.invokeMethodWithNoneParameter(object, method).orElse(null);
+    }
+
+    private void initFunction() {
+        boolean canLoadLowVersion = canLoadLowVersion();
+        if (canLoadLowVersion) {
+            addHeader = (obj, key, value) -> ((HttpServletResponse) obj).addHeader(key, value);
+            getServerPort = obj -> ((HttpServletRequest) obj).getServerPort();
+            getRemoteAddr = obj -> ((HttpServletRequest) obj).getRemoteAddr();
+            getHeader = (obj, key) -> ((HttpServletRequest) obj).getHeader(key);
+        } else {
+            addHeader = this::addHeader;
+            getServerPort = this::getServerPort;
+            getRemoteAddr = this::getRemoteAddr;
+            getHeader = this::getHeader;
+        }
+    }
+
+    private boolean canLoadLowVersion() {
+        try {
+            Class.forName(HttpServletRequest.class.getCanonicalName());
+        } catch (NoClassDefFoundError | ClassNotFoundException error) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * mapping
+     *
+     * @param <T> parameter1
+     * @param <R> parameter2
+     * @param <U> parameter3
+     * @author proveceee
+     * @since 2024-11-15
+     */
+    @FunctionalInterface
+    private interface Consumer<T, R, U> {
+        void accept(T t, R r, U u);
     }
 }
