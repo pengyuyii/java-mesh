@@ -24,15 +24,14 @@ import com.huawei.flowcontrol.service.InterceptorSupporter;
 
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.utils.LogUtils;
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
 
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 /**
  * DispatcherServlet 的 API接口增强 埋点定义sentinel资源
@@ -49,18 +48,18 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
      * @param request 请求
      * @return HttpRequestEntity
      */
-    private Optional<HttpRequestEntity> convertToHttpEntity(HttpServletRequest request) {
+    private Optional<HttpRequestEntity> convertToHttpEntity(Object request) {
         if (request == null) {
             return Optional.empty();
         }
-        String uri = request.getRequestURI();
+        String uri = getRequestUri(request);
         return Optional.of(new HttpRequestEntity.Builder()
                 .setRequestType(RequestType.SERVER)
-                .setPathInfo(request.getPathInfo())
+                .setPathInfo(getPathInfo(request))
                 .setServletPath(uri)
                 .setHeaders(getHeaders(request))
-                .setMethod(request.getMethod())
-                .setServiceName(request.getHeader(ConfigConst.FLOW_REMOTE_SERVICE_NAME_HEADER_KEY))
+                .setMethod(getMethod(request))
+                .setServiceName(getHeader(request, ConfigConst.FLOW_REMOTE_SERVICE_NAME_HEADER_KEY))
                 .build());
     }
 
@@ -70,12 +69,12 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
      * @param request 请求信息
      * @return headers
      */
-    private Map<String, String> getHeaders(HttpServletRequest request) {
-        final Enumeration<String> headerNames = request.getHeaderNames();
+    private Map<String, String> getHeaders(Object request) {
+        final Enumeration<String> headerNames = getHeaderNames(request);
         final Map<String, String> headers = new HashMap<>();
         while (headerNames.hasMoreElements()) {
             final String headerName = headerNames.nextElement();
-            headers.put(headerName, request.getHeader(headerName));
+            headers.put(headerName, getHeader(request, headerName));
         }
         return Collections.unmodifiableMap(headers);
     }
@@ -84,19 +83,19 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
     protected final ExecuteContext doBefore(ExecuteContext context) throws Exception {
         LogUtils.printHttpRequestBeforePoint(context);
         final Object[] allArguments = context.getArguments();
-        final HttpServletRequest argument = (HttpServletRequest) allArguments[0];
+        final Object request = allArguments[0];
         final FlowControlResult result = new FlowControlResult();
-        final Optional<HttpRequestEntity> httpRequestEntity = convertToHttpEntity(argument);
+        final Optional<HttpRequestEntity> httpRequestEntity = convertToHttpEntity(request);
         if (!httpRequestEntity.isPresent()) {
             return context;
         }
         chooseHttpService().onBefore(className, httpRequestEntity.get(), result);
         if (result.isSkip()) {
             context.skip(null);
-            final HttpServletResponse response = (HttpServletResponse) allArguments[1];
+            final Object response = allArguments[1];
             if (response != null) {
-                response.setStatus(result.getResponse().getCode());
-                response.getWriter().print(result.buildResponseMsg());
+                setStatus(response, result.getResponse().getCode());
+                getWriter(response).print(result.buildResponseMsg());
             }
         }
         return context;
@@ -114,5 +113,40 @@ public class DispatcherServletInterceptor extends InterceptorSupporter {
         chooseHttpService().onThrow(className, context.getThrowable());
         LogUtils.printHttpRequestOnThrowPoint(context);
         return context;
+    }
+
+    private String getRequestUri(Object httpServletRequest) {
+        return getString(httpServletRequest, "getRequestURI");
+    }
+
+    private String getPathInfo(Object httpServletRequest) {
+        return getString(httpServletRequest, "getPathInfo");
+    }
+
+    private String getMethod(Object httpServletRequest) {
+        return getString(httpServletRequest, "getMethod");
+    }
+
+    private Enumeration<String> getHeaderNames(Object httpServletRequest) {
+        return (Enumeration<String>) ReflectUtils.invokeMethodWithNoneParameter(httpServletRequest, "getHeaderNames")
+                .orElse(null);
+    }
+
+    private String getHeader(Object httpServletRequest, String key) {
+        return (String) ReflectUtils.invokeMethod(httpServletRequest, "getHeader", new Class[]{String.class},
+                new Object[]{key}).orElse(null);
+    }
+
+    private PrintWriter getWriter(Object httpServletRequest) {
+        return (PrintWriter) ReflectUtils.invokeMethodWithNoneParameter(httpServletRequest, "getWriter")
+                .orElse(null);
+    }
+
+    private void setStatus(Object httpServletResponse, int code) {
+        ReflectUtils.invokeMethod(httpServletResponse, "setStatus", new Class[]{int.class}, new Object[]{code});
+    }
+
+    private String getString(Object object, String method) {
+        return (String) ReflectUtils.invokeMethodWithNoneParameter(object, method).orElse(null);
     }
 }

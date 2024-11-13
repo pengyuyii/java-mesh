@@ -20,7 +20,7 @@
  * from the Apache Dubbo project.
  */
 
-package com.huawei.registry.inject.grace;
+package com.huawei.registry.grace.interceptors;
 
 import com.huawei.registry.config.GraceConfig;
 import com.huawei.registry.config.grace.GraceConstants;
@@ -30,23 +30,19 @@ import com.huawei.registry.context.RegisterContext;
 import com.huawei.registry.context.RegisterContext.ClientInfo;
 import com.huawei.registry.services.GraceService;
 
+import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
 import com.huaweicloud.sermant.core.utils.StringUtils;
 
-import org.springframework.web.servlet.HandlerInterceptor;
-import org.springframework.web.servlet.ModelAndView;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 /**
- * Spring Web请求前置拦截器, 由拦截器动态加入, 每次请求都会添加, {@link com.huawei.registry.grace.interceptors.SpringWebHandlerInterceptor}
+ * Spring Web请求拦截器
  *
  * @author zhouss
  * @since 2022-05-23
  */
-public class SpringRequestInterceptor implements HandlerInterceptor {
+public class DispatcherServletInterceptor extends GraceSwitchInterceptor {
     private final GraceService graceService;
 
     private final GraceConfig graceConfig;
@@ -54,55 +50,78 @@ public class SpringRequestInterceptor implements HandlerInterceptor {
     /**
      * 构造方法
      */
-    public SpringRequestInterceptor() {
+    public DispatcherServletInterceptor() {
         graceService = PluginServiceManager.getPluginService(GraceService.class);
         graceConfig = PluginConfigManager.getPluginConfig(GraceConfig.class);
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
+    public ExecuteContext doBefore(ExecuteContext context) {
         if (GraceContext.INSTANCE.getStartWarmUpTime() == 0) {
             GraceContext.INSTANCE.setStartWarmUpTime(System.currentTimeMillis());
         }
+        Object[] arguments = context.getArguments();
+        Object request = arguments[0];
+        Object response = arguments[1];
+
         addGraceAddress(request);
         final GraceShutDownManager graceShutDownManager = GraceContext.INSTANCE.getGraceShutDownManager();
         graceShutDownManager.increaseRequestCount();
         if (graceShutDownManager.isShutDown() && graceConfig.isEnableGraceShutdown()) {
             // 已被标记为关闭状态, 开始统计进入的请求数
             final ClientInfo clientInfo = RegisterContext.INSTANCE.getClientInfo();
-            response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
+            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
                 buildEndpoint(clientInfo.getIp(), clientInfo.getPort()));
-            response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
+            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_ENDPOINT,
                 buildEndpoint(clientInfo.getHost(), clientInfo.getPort()));
-            response.addHeader(GraceConstants.MARK_SHUTDOWN_SERVICE_NAME, clientInfo.getServiceName());
+            addHeader(response, GraceConstants.MARK_SHUTDOWN_SERVICE_NAME, clientInfo.getServiceName());
         }
-        return true;
+        return context;
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-        ModelAndView modelAndView) {
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler,
-        Exception ex) {
+    public ExecuteContext doAfter(ExecuteContext context) {
         GraceContext.INSTANCE.getGraceShutDownManager().decreaseRequestCount();
+        return context;
     }
 
-    private String buildEndpoint(String host, int port) {
-        return host + ":" + port;
+    @Override
+    public ExecuteContext doThrow(ExecuteContext context) {
+        GraceContext.INSTANCE.getGraceShutDownManager().decreaseRequestCount();
+        return context;
     }
 
-    private void addGraceAddress(HttpServletRequest request) {
+    private void addGraceAddress(Object request) {
         if (graceConfig.isEnableSpring() && graceConfig.isEnableGraceShutdown() && graceConfig.isEnableOfflineNotify()
             && GraceConstants.GRACE_OFFLINE_SOURCE_VALUE
-            .equals(request.getHeader(GraceConstants.GRACE_OFFLINE_SOURCE_KEY))) {
-            String address = request.getHeader(GraceConstants.SERMANT_GRACE_ADDRESS);
+                .equals(getHeader(request, GraceConstants.GRACE_OFFLINE_SOURCE_KEY))) {
+            String address = getHeader(request, GraceConstants.SERMANT_GRACE_ADDRESS);
             if (StringUtils.isBlank(address)) {
-                address = request.getRemoteAddr() + ":" + request.getServerPort();
+                address = getRemoteAddr(request) + ":" + getServerPort(request);
             }
             graceService.addAddress(address);
         }
+    }
+
+    private void addHeader(Object httpServletRequest, String key, String value) {
+        ReflectUtils.invokeMethod(httpServletRequest, "addHeader", new Class[]{String.class, String.class},
+                new Object[]{key, value});
+    }
+
+    private int getServerPort(Object httpServletRequest) {
+        return (int) ReflectUtils.invokeMethodWithNoneParameter(httpServletRequest, "getServerPort").orElse(0);
+    }
+
+    private String getRemoteAddr(Object httpServletRequest) {
+        return getString(httpServletRequest, "getRemoteAddr");
+    }
+
+    private String getHeader(Object httpServletRequest, String key) {
+        return (String) ReflectUtils.invokeMethod(httpServletRequest, "getHeader", new Class[]{String.class},
+                new Object[]{key}).orElse(null);
+    }
+
+    private String getString(Object object, String method) {
+        return (String) ReflectUtils.invokeMethodWithNoneParameter(object, method).orElse(null);
     }
 }

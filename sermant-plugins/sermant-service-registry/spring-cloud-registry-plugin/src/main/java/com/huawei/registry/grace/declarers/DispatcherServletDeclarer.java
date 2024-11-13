@@ -17,7 +17,7 @@
 
 package com.huawei.registry.grace.declarers;
 
-import com.huawei.registry.grace.interceptors.SpringWebHandlerInterceptor;
+import com.huawei.registry.grace.interceptors.DispatcherServletInterceptor;
 
 import com.huaweicloud.sermant.core.plugin.agent.declarer.AbstractPluginDeclarer;
 import com.huaweicloud.sermant.core.plugin.agent.declarer.InterceptDeclarer;
@@ -30,16 +30,16 @@ import com.huaweicloud.sermant.core.plugin.agent.matcher.MethodMatcher;
  * @author zhouss
  * @since 2022-05-23
  */
-public class SpringWebHandlerDeclarer extends AbstractPluginDeclarer {
+public class DispatcherServletDeclarer extends AbstractPluginDeclarer {
     /**
      * 增强类的全限定名
      */
-    private static final String ENHANCE_CLASS = "org.springframework.web.servlet.HandlerExecutionChain";
+    private static final String ENHANCE_CLASS = "org.springframework.web.servlet.DispatcherServlet";
 
     /**
      * 拦截类的全限定名
      */
-    private static final String INTERCEPT_CLASS = SpringWebHandlerInterceptor.class.getCanonicalName();
+    private static final String INTERCEPT_CLASS = DispatcherServletInterceptor.class.getCanonicalName();
 
     @Override
     public ClassMatcher getClassMatcher() {

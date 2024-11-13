@@ -23,8 +23,7 @@ import com.huawei.monitor.util.MonitorCacheUtil;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
 import com.huaweicloud.sermant.core.utils.LogUtils;
-
-import javax.servlet.http.HttpServletRequest;
+import com.huaweicloud.sermant.core.utils.ReflectUtils;
 
 /**
  * HTTP拦截定义
@@ -51,7 +50,7 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
             LogUtils.printHttpRequestAfterPoint(context);
             return context;
         }
-        String uri = ((HttpServletRequest) context.getArguments()[0]).getRequestURI();
+        String uri = getRequestUri(context.getArguments()[0]);
         MetricCalEntity metricCalEntity = MonitorCacheUtil.getMetricCalEntity(uri);
         metricCalEntity.getReqNum().incrementAndGet();
         long startTime = (Long) context.getExtMemberFieldValue(START_TIME);
@@ -71,11 +70,15 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
             LogUtils.printHttpRequestOnThrowPoint(context);
             return context;
         }
-        String uri = ((HttpServletRequest) context.getArguments()[0]).getRequestURI();
+        String uri = getRequestUri(context.getArguments()[0]);
         MetricCalEntity metricCalEntity = MonitorCacheUtil.getMetricCalEntity(uri);
         metricCalEntity.getReqNum().incrementAndGet();
         metricCalEntity.getFailedReqNum().incrementAndGet();
         LogUtils.printHttpRequestOnThrowPoint(context);
         return context;
+    }
+
+    private String getRequestUri(Object httpServletRequest) {
+        return (String) ReflectUtils.invokeMethodWithNoneParameter(httpServletRequest, "getRequestURI").orElse(null);
     }
 }

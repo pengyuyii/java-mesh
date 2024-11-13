@@ -36,7 +36,7 @@ com.huawei.registry.declarers.health.HealthIndicatorDeclarer
 com.huawei.registry.grace.declarers.RegistryDelayDeclarer
 com.huawei.registry.grace.declarers.SpringRibbonWarmUpDeclarer
 com.huawei.registry.grace.declarers.SpringLoadbalancerWarmUpDeclarer
-com.huawei.registry.grace.declarers.SpringWebHandlerDeclarer
+com.huawei.registry.grace.declarers.DispatcherServletDeclarer
 com.huawei.registry.grace.declarers.SpringRibbonBalancerDeclarer
 com.huawei.registry.grace.declarers.SpringCacheManagerDeclarer
 com.huawei.registry.grace.declarers.SpringLoadbalancerFeignResponseDeclarer

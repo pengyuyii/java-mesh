@@ -1,11 +1,11 @@
 /*
- * Copyright (C) 2022-2022 Huawei Technologies Co., Ltd. All rights reserved.
+ * Copyright (C) 2022-2024 Huawei Technologies Co., Ltd. All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- * 	http://www.apache.org/licenses/LICENSE-2.0
+ *     http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package com.huawei.registry.inject.grace;
+package com.huawei.registry.grace.interceptors;
 
 import com.huawei.registry.config.GraceConfig;
 import com.huawei.registry.config.grace.GraceConstants;
 import com.huawei.registry.config.grace.GraceContext;
 import com.huawei.registry.services.GraceService;
 
+import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
 
@@ -45,7 +46,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author zhouss
  * @since 2022-09-06
  */
-public class SpringRequestInterceptorTest {
+public class DispatcherServletInterceptorTest {
     private final String testAddress = "localhost:8099";
 
     private final List<String> addresses = new ArrayList<>();
@@ -64,7 +65,9 @@ public class SpringRequestInterceptorTest {
         }
     };
 
-    private SpringRequestInterceptor interceptor;
+    private ExecuteContext executeContext;
+
+    private DispatcherServletInterceptor interceptor;
 
     @Mock
     private HttpServletRequest request;
@@ -77,7 +80,7 @@ public class SpringRequestInterceptorTest {
     private MockedStatic<PluginConfigManager> pluginConfigManagerMockedStatic;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchMethodException {
         MockitoAnnotations.openMocks(this);
         pluginServiceManagerMockedStatic = Mockito.mockStatic(PluginServiceManager.class);
         pluginConfigManagerMockedStatic = Mockito.mockStatic(PluginConfigManager.class);
@@ -92,7 +95,10 @@ public class SpringRequestInterceptorTest {
                 .thenReturn(GraceConstants.GRACE_OFFLINE_SOURCE_VALUE);
         Mockito.when(request.getHeader(GraceConstants.SERMANT_GRACE_ADDRESS))
                 .thenReturn(testAddress);
-        interceptor = new SpringRequestInterceptor();
+        interceptor = new DispatcherServletInterceptor();
+        Object[] arguments = new Object[]{request, response};
+        executeContext = ExecuteContext.forMemberMethod(new Object(), String.class.getMethod("trim"), arguments, null,
+                null);
     }
 
     @After
@@ -102,9 +108,9 @@ public class SpringRequestInterceptorTest {
     }
 
     @Test
-    public void preHandle() {
+    public void before() {
         GraceContext.INSTANCE.getGraceShutDownManager().setShutDown(true);
-        interceptor.preHandle(request, response, new Object());
+        interceptor.doBefore(executeContext);
         Assert.assertTrue(GraceContext.INSTANCE.getStartWarmUpTime() > 0);
         Assert.assertTrue(addresses.contains(testAddress));
         Assert.assertTrue(GraceContext.INSTANCE.getGraceShutDownManager().getRequestCount() > 0);
@@ -115,13 +121,13 @@ public class SpringRequestInterceptorTest {
     }
 
     @Test
-    public void postHandle() {
-        interceptor.postHandle(request, response, new Object(), null);
+    public void after() {
+        interceptor.doAfter(executeContext);
     }
 
     @Test
-    public void afterCompletion() {
-        interceptor.afterCompletion(request, response, new Object(), null);
+    public void doThrow() {
+        interceptor.doThrow(executeContext);
         Assert.assertTrue(GraceContext.INSTANCE.getGraceShutDownManager().getRequestCount() < 0);
         GraceContext.INSTANCE.getGraceShutDownManager().increaseRequestCount();
     }
