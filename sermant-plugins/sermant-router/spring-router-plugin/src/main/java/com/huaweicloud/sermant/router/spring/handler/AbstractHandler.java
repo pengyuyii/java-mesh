@@ -51,4 +51,48 @@ public abstract class AbstractHandler implements Handler {
         }
         return map;
     }
+
+    /**
+     * 获取透传的标记
+     *
+     * @param path 请求路径
+     * @param methodName http方法
+     * @param headers http请求头
+     * @param parameters url参数
+     * @param keys 透传标记key
+     * @return 透传的标记
+     */
+    public abstract Map<String, List<String>> getRequestTag(String path, String methodName,
+            Map<String, List<String>> headers, Map<String, List<String>> parameters, Keys keys);
+
+    /**
+     * 透传标记key实体
+     *
+     * @author provenceee
+     * @since 2023-02-21
+     */
+    public static class Keys {
+        private final Set<String> matchKeys;
+
+        private final Set<String> injectTags;
+
+        /**
+         * 构造方法
+         *
+         * @param matchKeys 标签路由透传标记
+         * @param injectTags 泳道透传标记
+         */
+        public Keys(Set<String> matchKeys, Set<String> injectTags) {
+            this.matchKeys = matchKeys;
+            this.injectTags = injectTags;
+        }
+
+        public Set<String> getMatchKeys() {
+            return matchKeys;
+        }
+
+        public Set<String> getInjectTags() {
+            return injectTags;
+        }
+    }
 }

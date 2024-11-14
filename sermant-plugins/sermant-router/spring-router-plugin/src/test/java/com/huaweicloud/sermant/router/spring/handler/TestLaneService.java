@@ -33,12 +33,6 @@ public class TestLaneService implements LaneService {
     private boolean returnEmpty;
 
     @Override
-    public Map<String, List<String>> getLaneByParameterArray(String path, String methodName,
-            Map<String, List<String>> headers, Map<String, String[]> parameters) {
-        return getLane();
-    }
-
-    @Override
     public Map<String, List<String>> getLaneByParameterList(String path, String methodName,
             Map<String, List<String>> headers, Map<String, List<String>> parameters) {
         return getLane();

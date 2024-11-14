@@ -28,7 +28,7 @@ import java.util.Set;
  * @author provenceee
  * @since 2023-02-21
  */
-public class RouteMappingHandler extends AbstractMappingHandler {
+public class RouteHandler extends AbstractHandler {
     /**
      * 获取透传的标记
      *
@@ -40,8 +40,8 @@ public class RouteMappingHandler extends AbstractMappingHandler {
      */
     @Override
     public Map<String, List<String>> getRequestTag(String path, String methodName, Map<String, List<String>> headers,
-            Map<String, List<String>> parameters) {
-        Set<String> matchKeys = configService.getMatchKeys();
+            Map<String, List<String>> parameters, Keys keys) {
+        Set<String> matchKeys = keys.getMatchKeys();
         return getRequestTag(headers, matchKeys);
     }
 

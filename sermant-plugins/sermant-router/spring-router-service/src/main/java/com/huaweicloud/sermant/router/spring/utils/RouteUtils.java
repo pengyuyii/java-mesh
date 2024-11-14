@@ -47,29 +47,6 @@ public class RouteUtils {
      * @param parameters parameters
      * @return 匹配的泳道标记
      */
-    public static List<Route> getLaneRoutesByParameterArray(List<Rule> list, Map<String, List<String>> headers,
-            Map<String, String[]> parameters) {
-        for (Rule rule : list) {
-            Match match = rule.getMatch();
-            if (match == null) {
-                return rule.getRoute();
-            }
-            if (isMatchByHeaders(match.getHeaders(), headers) && isMatchByParameterArray(match.getParameters(),
-                    parameters)) {
-                return rule.getRoute();
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * 获取匹配的泳道
-     *
-     * @param list 有效的规则
-     * @param headers header
-     * @param parameters parameters
-     * @return 匹配的泳道标记
-     */
     public static List<Route> getLaneRoutesByParameterList(List<Rule> list, Map<String, List<String>> headers,
             Map<String, List<String>> parameters) {
         for (Rule rule : list) {
@@ -99,29 +76,6 @@ public class RouteUtils {
                 MatchStrategy matchStrategy = valueMatch.getMatchStrategy();
                 List<String> list = headers.get(key);
                 String arg = list == null ? null : list.get(0);
-                if (!matchStrategy.isMatch(values, arg, matchRule.isCaseInsensitive())) {
-                    // 只要一个匹配不上，那就是不匹配
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
-    private static boolean isMatchByParameterArray(Map<String, List<MatchRule>> matchParameters,
-            Map<String, String[]> parameters) {
-        if (CollectionUtils.isEmpty(matchParameters)) {
-            return true;
-        }
-        for (Entry<String, List<MatchRule>> entry : matchParameters.entrySet()) {
-            String key = entry.getKey();
-            List<MatchRule> matchRuleList = entry.getValue();
-            for (MatchRule matchRule : matchRuleList) {
-                ValueMatch valueMatch = matchRule.getValueMatch();
-                List<String> values = valueMatch.getValues();
-                MatchStrategy matchStrategy = valueMatch.getMatchStrategy();
-                String[] arr = parameters.get(key);
-                String arg = (arr == null || arr.length == 0) ? null : arr[0];
                 if (!matchStrategy.isMatch(values, arg, matchRule.isCaseInsensitive())) {
                     // 只要一个匹配不上，那就是不匹配
                     return false;

@@ -22,7 +22,11 @@ import com.huaweicloud.sermant.router.common.utils.CollectionUtils;
 import com.huaweicloud.sermant.router.common.utils.ReflectUtils;
 import com.huaweicloud.sermant.router.spring.cache.AppCache;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -37,17 +41,42 @@ public class SpringRouterUtils {
 
     private static final String ZONE_KEY = "zone";
 
+    private static final String QUERY_SEPARATOR = "&";
+
+    private static final String KV_SEPARATOR = "=";
+
+    private static final int KV_SPLIT_LENGTH = 2;
+
     private SpringRouterUtils() {
     }
 
     /**
-     * 获取请求中的parameter
+     * get parameters from query sting
+     *
+     * @param query query sting
+     * @return parameters
+     */
+    public static Map<String, List<String>> getParametersByQuery(String query) {
+        if (StringUtils.isBlank(query)) {
+            return Collections.emptyMap();
+        }
+        String[] queryArr = query.split(QUERY_SEPARATOR);
+        Map<String, List<String>> parameters = new HashMap<>();
+        for (String kv : queryArr) {
+            String[] kvArr = kv.split(KV_SEPARATOR, KV_SPLIT_LENGTH);
+            parameters.computeIfAbsent(kvArr[0], value -> new ArrayList<>()).add(kvArr[1]);
+        }
+        return Collections.unmodifiableMap(parameters);
+    }
+
+    /**
+     * 获取请求中的query
      *
      * @param obj HttpServletRequest
-     * @return parameter
+     * @return query
      */
-    public static Map<String, String[]> getParameterMap(Object obj) {
-        return (Map<String, String[]>) ReflectUtils.invokeWithNoneParameter(obj, "getParameterMap");
+    public static String getQueryString(Object obj) {
+        return ReflectUtils.invokeWithNoneParameterAndReturnString(obj, "getQueryString");
     }
 
     /**

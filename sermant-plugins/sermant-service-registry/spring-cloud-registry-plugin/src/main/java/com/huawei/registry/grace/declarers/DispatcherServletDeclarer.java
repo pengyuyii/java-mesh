@@ -49,7 +49,7 @@ public class DispatcherServletDeclarer extends AbstractPluginDeclarer {
     @Override
     public InterceptDeclarer[] getInterceptDeclarers(ClassLoader classLoader) {
         return new InterceptDeclarer[]{
-            InterceptDeclarer.build(MethodMatcher.nameEquals("applyPreHandle"), INTERCEPT_CLASS)
+            InterceptDeclarer.build(MethodMatcher.nameEquals("doService"), INTERCEPT_CLASS)
         };
     }
 }

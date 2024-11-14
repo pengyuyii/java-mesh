@@ -18,11 +18,16 @@ package com.huaweicloud.sermant.router.spring.interceptor;
 
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
+import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
 import com.huaweicloud.sermant.router.common.handler.Handler;
+import com.huaweicloud.sermant.router.common.utils.CollectionUtils;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
-import com.huaweicloud.sermant.router.spring.handler.AbstractMappingHandler;
-import com.huaweicloud.sermant.router.spring.handler.LaneMappingHandler;
-import com.huaweicloud.sermant.router.spring.handler.RouteMappingHandler;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler.Keys;
+import com.huaweicloud.sermant.router.spring.handler.LaneHandler;
+import com.huaweicloud.sermant.router.spring.handler.RouteHandler;
+import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
+import com.huaweicloud.sermant.router.spring.utils.SpringRouterUtils;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -32,6 +37,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * webflux获取header拦截点
@@ -43,15 +49,18 @@ public class AbstractHandlerMappingInterceptor extends AbstractInterceptor {
     private static final String EXCEPT_CLASS_NAME
             = "org.springframework.web.reactive.result.method.annotation.RequestMappingHandlerMapping";
 
-    private final List<AbstractMappingHandler> handlers;
+    private final SpringConfigService configService;
+
+    private final List<AbstractHandler> handlers;
 
     /**
      * 构造方法
      */
     public AbstractHandlerMappingInterceptor() {
+        configService = PluginServiceManager.getPluginService(SpringConfigService.class);
         handlers = new ArrayList<>();
-        handlers.add(new LaneMappingHandler());
-        handlers.add(new RouteMappingHandler());
+        handlers.add(new LaneHandler());
+        handlers.add(new RouteHandler());
         handlers.sort(Comparator.comparingInt(Handler::getOrder));
     }
 
@@ -59,14 +68,21 @@ public class AbstractHandlerMappingInterceptor extends AbstractInterceptor {
     public ExecuteContext before(ExecuteContext context) {
         if (shouldHandle(context)) {
             ThreadLocalUtils.removeRequestTag();
+            Set<String> matchKeys = configService.getMatchKeys();
+            Set<String> injectTags = configService.getInjectTags();
+            if (CollectionUtils.isEmpty(matchKeys) && CollectionUtils.isEmpty(injectTags)) {
+                // 染色标记为空，代表没有染色规则，直接return
+                return context;
+            }
             ServerWebExchange exchange = (ServerWebExchange) context.getArguments()[0];
             ServerHttpRequest request = exchange.getRequest();
             HttpHeaders headers = request.getHeaders();
             String path = request.getURI().getPath();
             String methodName = request.getMethod().name();
-            Map<String, List<String>> queryParams = request.getQueryParams();
-            handlers.forEach(handler -> ThreadLocalUtils
-                    .addRequestTag(handler.getRequestTag(path, methodName, headers, queryParams)));
+            String query = request.getURI().getQuery();
+            Map<String, List<String>> queryParams = SpringRouterUtils.getParametersByQuery(query);
+            handlers.forEach(handler -> ThreadLocalUtils.addRequestTag(
+                    handler.getRequestTag(path, methodName, headers, queryParams, new Keys(matchKeys, injectTags))));
         }
         return context;
     }

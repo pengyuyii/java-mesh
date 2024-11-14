@@ -63,10 +63,7 @@ public class LaneServiceTest {
      */
     @Test
     public void testWithInvalidConfiguration() {
-        Map<String, List<String>> lane = service.getLaneByParameterArray("", "", Collections.emptyMap(), null);
-        Assert.assertEquals(Collections.emptyMap(), lane);
-
-        lane = service.getLaneByParameterList("", "", Collections.emptyMap(), null);
+        Map<String, List<String>> lane = service.getLaneByParameterList("", "", Collections.emptyMap(), null);
         Assert.assertEquals(Collections.emptyMap(), lane);
     }
 
@@ -76,10 +73,7 @@ public class LaneServiceTest {
     @Test
     public void testWithEmptyRules() {
         initRules();
-        Map<String, List<String>> lane = service.getLaneByParameterArray("", "", Collections.emptyMap(), null);
-        Assert.assertEquals(Collections.emptyMap(), lane);
-
-        lane = service.getLaneByParameterList("", "", Collections.emptyMap(), null);
+        Map<String, List<String>> lane = service.getLaneByParameterList("", "", Collections.emptyMap(), null);
         Assert.assertEquals(Collections.emptyMap(), lane);
     }
 
@@ -90,10 +84,6 @@ public class LaneServiceTest {
     public void testWithEmptyRoutes() {
         initRules();
         Map<String, List<String>> lane = service
-                .getLaneByParameterArray("/foo/test", "get", Collections.emptyMap(), null);
-        Assert.assertEquals(Collections.emptyMap(), lane);
-
-        lane = service
                 .getLaneByParameterList("/foo/test", "get", Collections.emptyMap(), null);
         Assert.assertEquals(Collections.emptyMap(), lane);
     }
@@ -105,13 +95,6 @@ public class LaneServiceTest {
     public void testGetLane() {
         initRules();
         Map<String, List<String>> lane = service
-                .getLaneByParameterArray("/foo/test", "get",
-                        Collections.singletonMap("bar", Collections.singletonList("bar1")),
-                        Collections.singletonMap("foo", new String[]{"foo1"}));
-        Assert.assertEquals(1, lane.size());
-        Assert.assertEquals("flag1", lane.get("sermant-flag").get(0));
-
-        lane = service
                 .getLaneByParameterList("/foo/test", "get",
                         Collections.singletonMap("bar", Collections.singletonList("bar1")),
                         Collections.singletonMap("foo", Collections.singletonList("foo1")));

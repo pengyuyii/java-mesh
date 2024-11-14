@@ -37,18 +37,6 @@ public interface LaneService extends PluginService {
      * @param parameters url参数
      * @return 泳道标记
      */
-    Map<String, List<String>> getLaneByParameterArray(String path, String methodName, Map<String, List<String>> headers,
-            Map<String, String[]> parameters);
-
-    /**
-     * 获取泳道标记
-     *
-     * @param path 请求路径
-     * @param methodName http方法
-     * @param headers http请求头
-     * @param parameters url参数
-     * @return 泳道标记
-     */
     Map<String, List<String>> getLaneByParameterList(String path, String methodName, Map<String, List<String>> headers,
             Map<String, List<String>> parameters);
 }

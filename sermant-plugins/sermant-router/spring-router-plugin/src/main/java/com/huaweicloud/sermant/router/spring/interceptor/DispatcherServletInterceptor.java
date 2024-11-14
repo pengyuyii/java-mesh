@@ -19,16 +19,20 @@ package com.huaweicloud.sermant.router.spring.interceptor;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
 import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
+import com.huaweicloud.sermant.core.utils.StringUtils;
 import com.huaweicloud.sermant.router.common.handler.Handler;
 import com.huaweicloud.sermant.router.common.utils.CollectionUtils;
 import com.huaweicloud.sermant.router.common.utils.ThreadLocalUtils;
-import com.huaweicloud.sermant.router.spring.handler.AbstractRequestTagHandler;
-import com.huaweicloud.sermant.router.spring.handler.AbstractRequestTagHandler.Keys;
-import com.huaweicloud.sermant.router.spring.handler.LaneRequestTagHandler;
-import com.huaweicloud.sermant.router.spring.handler.RouteRequestTagHandler;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler.Keys;
+import com.huaweicloud.sermant.router.spring.handler.LaneHandler;
+import com.huaweicloud.sermant.router.spring.handler.RouteHandler;
 import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
 import com.huaweicloud.sermant.router.spring.utils.SpringRouterUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -36,6 +40,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -45,7 +50,7 @@ import java.util.Set;
  * @since 2022-07-12
  */
 public class DispatcherServletInterceptor extends AbstractInterceptor {
-    private final List<AbstractRequestTagHandler> handlers;
+    private final List<AbstractHandler> handlers;
 
     private final SpringConfigService configService;
 
@@ -55,8 +60,8 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
     public DispatcherServletInterceptor() {
         configService = PluginServiceManager.getPluginService(SpringConfigService.class);
         handlers = new ArrayList<>();
-        handlers.add(new LaneRequestTagHandler());
-        handlers.add(new RouteRequestTagHandler());
+        handlers.add(new LaneHandler());
+        handlers.add(new RouteHandler());
         handlers.sort(Comparator.comparingInt(Handler::getOrder));
     }
 
@@ -70,11 +75,13 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
         }
         Object request = context.getArguments()[0];
         Map<String, List<String>> headers = getHeaders(request);
-        Map<String, String[]> parameterMap = SpringRouterUtils.getParameterMap(request);
+        String queryString = SpringRouterUtils.getQueryString(request);
+        String decode = Optional.ofNullable(queryString).map(this::decode).orElse(StringUtils.EMPTY);
+        Map<String, List<String>> queryParams = SpringRouterUtils.getParametersByQuery(decode);
         String path = SpringRouterUtils.getRequestUri(request);
         String method = SpringRouterUtils.getMethod(request);
         handlers.forEach(handler -> ThreadLocalUtils.addRequestTag(
-                handler.getRequestTag(path, method, headers, parameterMap, new Keys(matchKeys, injectTags))));
+                handler.getRequestTag(path, method, headers, queryParams, new Keys(matchKeys, injectTags))));
         return context;
     }
 
@@ -90,6 +97,14 @@ public class DispatcherServletInterceptor extends AbstractInterceptor {
         ThreadLocalUtils.removeRequestData();
         ThreadLocalUtils.removeRequestTag();
         return context;
+    }
+
+    private String decode(String str) {
+        try {
+            return URLDecoder.decode(str, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            return StringUtils.EMPTY;
+        }
     }
 
     private Map<String, List<String>> getHeaders(Object request) {

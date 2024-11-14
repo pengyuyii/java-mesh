@@ -38,14 +38,6 @@ import java.util.Map;
  */
 public class LaneServiceImpl implements LaneService {
     @Override
-    public Map<String, List<String>> getLaneByParameterArray(String path, String methodName,
-            Map<String, List<String>> headers, Map<String, String[]> parameters) {
-        List<Rule> rules = getRules(path, methodName);
-        List<Route> routes = RouteUtils.getLaneRoutesByParameterArray(rules, headers, parameters);
-        return RuleUtils.getTargetLaneTags(routes);
-    }
-
-    @Override
     public Map<String, List<String>> getLaneByParameterList(String path, String methodName,
             Map<String, List<String>> headers, Map<String, List<String>> parameters) {
         List<Rule> rules = getRules(path, methodName);

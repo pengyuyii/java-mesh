@@ -18,7 +18,7 @@ package com.huaweicloud.sermant.router.spring.handler;
 
 import com.huaweicloud.sermant.core.service.ServiceManager;
 import com.huaweicloud.sermant.router.spring.TestSpringConfigService;
-import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler.Keys;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -43,7 +43,7 @@ public class RouteMappingHandlerTest {
 
     private static TestSpringConfigService configService;
 
-    private final RouteMappingHandler handler;
+    private final RouteHandler handler;
 
     /**
      * UT执行前进行mock
@@ -52,8 +52,6 @@ public class RouteMappingHandlerTest {
     public static void before() {
         mockServiceManager = Mockito.mockStatic(ServiceManager.class);
         configService = new TestSpringConfigService();
-        mockServiceManager.when(() -> ServiceManager.getService(SpringConfigService.class))
-                .thenReturn(configService);
     }
 
     /**
@@ -65,7 +63,7 @@ public class RouteMappingHandlerTest {
     }
 
     public RouteMappingHandlerTest() {
-        handler = new RouteMappingHandler();
+        handler = new RouteHandler();
     }
 
     /**
@@ -78,7 +76,8 @@ public class RouteMappingHandlerTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("bar", Collections.singletonList("bar1"));
         headers.put("foo", Collections.singletonList("foo1"));
-        Map<String, List<String>> requestTag = handler.getRequestTag("", "", headers, null);
+        Map<String, List<String>> requestTag = handler.getRequestTag("", "", headers, null,
+                new Keys(configService.getMatchKeys(), configService.getInjectTags()));
         Assert.assertNotNull(requestTag);
         Assert.assertEquals(2, requestTag.size());
         Assert.assertEquals("bar1", requestTag.get("bar").get(0));
@@ -86,7 +85,8 @@ public class RouteMappingHandlerTest {
 
         // 测试getMatchKeys返回空
         configService.setReturnEmptyWhenGetMatchKeys(true);
-        requestTag = handler.getRequestTag("", "", null, null);
+        requestTag = handler.getRequestTag("", "", null, null,
+                new Keys(configService.getMatchKeys(), configService.getInjectTags()));
         Assert.assertEquals(Collections.emptyMap(), requestTag);
     }
 }

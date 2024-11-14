@@ -18,8 +18,8 @@ package com.huaweicloud.sermant.router.spring.handler;
 
 import com.huaweicloud.sermant.core.service.ServiceManager;
 import com.huaweicloud.sermant.router.spring.TestSpringConfigService;
+import com.huaweicloud.sermant.router.spring.handler.AbstractHandler.Keys;
 import com.huaweicloud.sermant.router.spring.service.LaneService;
-import com.huaweicloud.sermant.router.spring.service.SpringConfigService;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -46,7 +46,7 @@ public class LaneMappingHandlerTest {
 
     private static TestSpringConfigService configService;
 
-    private final LaneMappingHandler handler;
+    private final LaneHandler handler;
 
     /**
      * UT执行前进行mock
@@ -58,8 +58,6 @@ public class LaneMappingHandlerTest {
         mockServiceManager.when(() -> ServiceManager.getService(LaneService.class))
                 .thenReturn(laneService);
         configService = new TestSpringConfigService();
-        mockServiceManager.when(() -> ServiceManager.getService(SpringConfigService.class))
-                .thenReturn(configService);
     }
 
     /**
@@ -71,7 +69,7 @@ public class LaneMappingHandlerTest {
     }
 
     public LaneMappingHandlerTest() {
-        handler = new LaneMappingHandler();
+        handler = new LaneHandler();
     }
 
     /**
@@ -81,7 +79,8 @@ public class LaneMappingHandlerTest {
     public void testGetRequestTag() {
         // 测试matchTags为null
         configService.setReturnEmptyWhenGetMatchTags(true);
-        Map<String, List<String>> requestTag = handler.getRequestTag("", "", null, null);
+        Map<String, List<String>> requestTag = handler.getRequestTag("", "", null, null,
+                new Keys(configService.getMatchKeys(), configService.getInjectTags()));
         Assert.assertEquals(requestTag, Collections.emptyMap());
 
         // 测试getLane返回空
@@ -90,7 +89,8 @@ public class LaneMappingHandlerTest {
         Map<String, List<String>> headers = new HashMap<>();
         headers.put("bar", Collections.singletonList("bar1"));
         headers.put("foo", Collections.singletonList("foo1"));
-        requestTag = handler.getRequestTag("", "", headers, null);
+        requestTag = handler.getRequestTag("", "", headers, null,
+                new Keys(configService.getMatchKeys(), configService.getInjectTags()));
         Assert.assertEquals(2, requestTag.size());
         Assert.assertEquals("bar1", requestTag.get("bar").get(0));
         Assert.assertEquals("foo1", requestTag.get("foo").get(0));
@@ -98,7 +98,8 @@ public class LaneMappingHandlerTest {
         // 测试getLane不为空
         configService.setReturnEmptyWhenGetMatchTags(false);
         laneService.setReturnEmpty(false);
-        requestTag = handler.getRequestTag("", "", headers, null);
+        requestTag = handler.getRequestTag("", "", headers, null,
+                new Keys(configService.getMatchKeys(), configService.getInjectTags()));
         Assert.assertEquals(3, requestTag.size());
         Assert.assertEquals("bar1", requestTag.get("bar").get(0));
         Assert.assertEquals("foo1", requestTag.get("foo").get(0));

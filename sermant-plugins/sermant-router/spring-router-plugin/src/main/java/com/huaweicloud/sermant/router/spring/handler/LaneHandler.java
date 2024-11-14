@@ -30,12 +30,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * 染色web拦截器处理器
+ * AbstractHandlerMapping处理器
  *
  * @author provenceee
  * @since 2023-02-21
  */
-public class LaneRequestTagHandler extends AbstractRequestTagHandler {
+public class LaneHandler extends AbstractHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger();
 
     private final LaneService laneService;
@@ -43,7 +43,7 @@ public class LaneRequestTagHandler extends AbstractRequestTagHandler {
     /**
      * 构造方法
      */
-    public LaneRequestTagHandler() {
+    public LaneHandler() {
         laneService = PluginServiceManager.getPluginService(LaneService.class);
     }
 
@@ -51,13 +51,14 @@ public class LaneRequestTagHandler extends AbstractRequestTagHandler {
      * 获取透传的标记
      *
      * @param path 请求路径
-     * @param methodName 方法名称
+     * @param methodName http方法
      * @param headers http请求头
+     * @param parameters url参数
      * @return 透传的标记
      */
     @Override
     public Map<String, List<String>> getRequestTag(String path, String methodName, Map<String, List<String>> headers,
-            Map<String, String[]> parameters, Keys keys) {
+            Map<String, List<String>> parameters, Keys keys) {
         Set<String> injectTags = keys.getInjectTags();
         if (CollectionUtils.isEmpty(injectTags)) {
             // 染色标记为空，代表没有染色规则，直接return
@@ -69,7 +70,7 @@ public class LaneRequestTagHandler extends AbstractRequestTagHandler {
         Map<String, List<String>> tags = getRequestTag(headers, injectTags);
 
         // 本次染色标记
-        Map<String, List<String>> laneTag = laneService.getLaneByParameterArray(path, methodName, headers, parameters);
+        Map<String, List<String>> laneTag = laneService.getLaneByParameterList(path, methodName, headers, parameters);
         if (CollectionUtils.isEmpty(laneTag)) {
             LOGGER.fine("Lane is empty.");
             return tags;
