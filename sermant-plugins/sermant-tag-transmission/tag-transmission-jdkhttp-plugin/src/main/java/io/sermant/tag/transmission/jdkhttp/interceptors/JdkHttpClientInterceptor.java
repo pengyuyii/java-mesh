@@ -88,15 +88,21 @@ public class JdkHttpClientInterceptor extends AbstractClientInterceptor<MessageH
             // The server side converts the label value to list storage when it is not null. If it is null, it directly
             // puts null. Therefore, if the client side values are empty, they must be null.
             if (CollectionUtils.isEmpty(values)) {
-                messageHeader.add(key, null);
+                setHeaders(messageHeader, key, null);
                 LOGGER.log(Level.FINE, "Traffic tag {0} have been injected to jdkhttp.", entry);
                 continue;
             }
             for (String value : values) {
-                messageHeader.add(key, value);
+                setHeaders(messageHeader, key, value);
             }
             LOGGER.log(Level.FINE, "Traffic tag {0}={1} have been injected to httpclient.", new Object[]{key,
                     values});
+        }
+    }
+
+    private void setHeaders(MessageHeader messageHeader, String key, String value) {
+        if (CollectionUtils.isEmpty(messageHeader.getHeaders().get(key))) {
+            messageHeader.set(key, value);
         }
     }
 }
