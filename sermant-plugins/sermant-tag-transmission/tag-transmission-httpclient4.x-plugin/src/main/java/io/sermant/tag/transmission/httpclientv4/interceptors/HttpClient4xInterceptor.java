@@ -71,15 +71,21 @@ public class HttpClient4xInterceptor extends AbstractClientInterceptor<HttpReque
             // The server side converts the label value to list storage when it is not null. If it is null, it directly
             // puts null. Therefore, if the client side values are empty, they must be null.
             if (CollectionUtils.isEmpty(values)) {
-                httpRequest.addHeader(key, null);
+                setHeaders(httpRequest, key, null);
                 LOGGER.log(Level.FINE, "Traffic tag {0} have been injected to httpclient.", entry);
                 continue;
             }
             for (String value : values) {
-                httpRequest.addHeader(key, value);
+                setHeaders(httpRequest, key, value);
             }
             LOGGER.log(Level.FINE, "Traffic tag {0}={1} have been injected to httpclient.", new Object[]{key,
                     values});
+        }
+    }
+
+    private void setHeaders(HttpRequest httpRequest, String key, String value) {
+        if (httpRequest.getHeaders(key) == null || httpRequest.getHeaders(key).length == 0) {
+            httpRequest.setHeader(key, value);
         }
     }
 }

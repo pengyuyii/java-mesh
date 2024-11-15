@@ -80,15 +80,21 @@ public class OkHttp2xInterceptor extends AbstractClientInterceptor<Builder> {
             // The server side converts the label value to list storage when it is not null. If it is null, it directly
             // puts null. Therefore, if the client side values are empty, they must be null.
             if (CollectionUtils.isEmpty(values)) {
-                builder.addHeader(key, null);
+                setHeaders(builder, key, null);
                 LOGGER.log(Level.FINE, "Traffic tag {0} have been injected to okhttp.", entry);
                 continue;
             }
             for (String value : values) {
-                builder.addHeader(key, value);
+                setHeaders(builder, key, value);
             }
             LOGGER.log(Level.FINE, "Traffic tag {0}={1} have been injected to okhttp.", new Object[]{key,
                     values});
+        }
+    }
+
+    private void setHeaders(Builder builder, String key, String value) {
+        if (CollectionUtils.isEmpty(builder.build().headers(key))) {
+            builder.header(key, value);
         }
     }
 }
