@@ -17,6 +17,7 @@
 
 package io.sermant.flowcontrol.retry;
 
+import io.sermant.core.classloader.ClassLoaderManager;
 import io.sermant.core.common.LoggerFactory;
 import io.sermant.core.plugin.agent.entity.ExecuteContext;
 import io.sermant.core.utils.ReflectUtils;
@@ -99,7 +100,7 @@ public class SpringLbChooseServerInterceptor extends InterceptorSupporter {
         if (defaultResponseClazz == null) {
             return Optional.empty();
         }
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         try {
             final Class<?> clazz = contextClassLoader.loadClass(defaultResponseClazz);
             final Constructor<?> declaredConstructor = clazz.getDeclaredConstructor(ServiceInstance.class);

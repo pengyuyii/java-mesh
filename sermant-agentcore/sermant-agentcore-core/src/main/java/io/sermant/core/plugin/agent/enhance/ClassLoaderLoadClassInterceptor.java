@@ -34,6 +34,7 @@ public class ClassLoaderLoadClassInterceptor extends AbstractClassLoaderIntercep
 
     @Override
     public ExecuteContext before(ExecuteContext context) throws Exception {
+        ClassLoaderManager.setUserClassLoader((ClassLoader) context.getObject());
         return context;
     }
 
