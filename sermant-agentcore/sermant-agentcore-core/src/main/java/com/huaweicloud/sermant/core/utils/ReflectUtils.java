@@ -17,6 +17,7 @@
 
 package com.huaweicloud.sermant.core.utils;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 
 import java.lang.reflect.AccessibleObject;
@@ -166,7 +167,7 @@ public class ReflectUtils {
             return Optional.empty();
         }
         return CLASS_CACHE.computeIfAbsent(className, value -> {
-            final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
             try {
                 return Optional.ofNullable(contextClassLoader.loadClass(className));
             } catch (ClassNotFoundException ignored) {

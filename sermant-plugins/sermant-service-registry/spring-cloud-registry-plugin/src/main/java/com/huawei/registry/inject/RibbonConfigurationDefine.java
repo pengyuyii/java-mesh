@@ -17,6 +17,7 @@
 
 package com.huawei.registry.inject;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.service.inject.ClassInjectDefine;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
 
@@ -52,6 +53,6 @@ public class RibbonConfigurationDefine extends BaseAutoConfigurationDefine {
     public boolean canInject() {
         return super.canInject() && ClassUtils.loadClass(
                 "org.springframework.cloud.netflix.ribbon.SpringClientFactory",
-                Thread.currentThread().getContextClassLoader(), false).isPresent();
+                ClassLoaderManager.getContextClassLoaderOrUserClassLoader(), false).isPresent();
     }
 }

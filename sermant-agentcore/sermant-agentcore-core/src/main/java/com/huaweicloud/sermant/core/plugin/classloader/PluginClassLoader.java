@@ -16,6 +16,7 @@
 
 package com.huaweicloud.sermant.core.plugin.classloader;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.config.ConfigManager;
 import com.huaweicloud.sermant.core.plugin.agent.config.AgentConfig;
@@ -112,9 +113,16 @@ public class PluginClassLoader extends URLClassLoader {
             // 无法从Sermant搜索路径中找到类，则尝试通过线程绑定的局部类加载器加载
             if (clazz == null) {
                 ClassLoader loader = localLoader.get(Thread.currentThread().getId());
-
+                if (loader == null) {
+                    LOGGER.log(Level.FINE, "localLoader is null, thread name is {0}, classs name is {1}.",
+                            new Object[]{Thread.currentThread().getName(), name});
+                }
                 if (loader == null && useContextLoader) {
-                    loader = Thread.currentThread().getContextClassLoader();
+                    loader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
+                    if (loader == null) {
+                        LOGGER.log(Level.WARNING, "contextClassLoader is null, thread name is {0}, classs name is {1}.",
+                                new Object[]{Thread.currentThread().getName(), name});
+                    }
                 }
 
                 // 确保局部类加载器不是当前类加载器，否则会stackoverflow

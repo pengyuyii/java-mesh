@@ -17,6 +17,7 @@
 
 package com.huawei.flowcontrol.inject;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.service.inject.ClassInjectDefine;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
 
@@ -53,6 +54,7 @@ public class FlowControlSpringConfigurationInjectDefine implements ClassInjectDe
     }
 
     private boolean isLoadedClass(String className) {
-        return ClassUtils.loadClass(className, Thread.currentThread().getContextClassLoader(), true).isPresent();
+        return ClassUtils.loadClass(className, ClassLoaderManager.getContextClassLoaderOrUserClassLoader(), true)
+                .isPresent();
     }
 }

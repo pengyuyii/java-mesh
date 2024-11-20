@@ -20,6 +20,7 @@ package com.huawei.flowcontrol.common.handler.retry;
 import com.huawei.flowcontrol.common.config.FlowControlConfig;
 import com.huawei.flowcontrol.common.support.ReflectMethodCacheSupport;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 
@@ -54,7 +55,8 @@ public abstract class AbstractRetry extends ReflectMethodCacheSupport implements
         final List<Class<?>> result = new ArrayList<>(classNames.length);
         for (String className : classNames) {
             try {
-                result.add(Class.forName(className, false, Thread.currentThread().getContextClassLoader()));
+                result.add(Class.forName(className, false,
+                        ClassLoaderManager.getContextClassLoaderOrUserClassLoader()));
             } catch (ClassNotFoundException exception) {
                 LoggerFactory.getLogger().info(String.format(Locale.ENGLISH,
                         "Can not find retry exception class %s", className));

@@ -17,6 +17,7 @@
 
 package com.huaweicloud.sermant.core.utils;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 
 import java.io.IOException;
@@ -111,7 +112,7 @@ public class ClassUtils {
     public static Optional<Object> createInstance(String className, ClassLoader classLoader, Class<?>[] paramTypes) {
         ClassLoader curClassLoader = classLoader;
         if (curClassLoader == null) {
-            curClassLoader = Thread.currentThread().getContextClassLoader();
+            curClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         }
         try {
             final Class<?> clazz = curClassLoader.loadClass(className);
