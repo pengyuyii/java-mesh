@@ -19,6 +19,7 @@ package com.huawei.registry.inject;
 
 import com.huawei.registry.config.RegisterConfig;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.service.inject.ClassInjectDefine;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
@@ -42,7 +43,7 @@ public class ScServerInjectDefine implements ClassInjectDefine {
 
     @Override
     public boolean canInject() {
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         final RegisterConfig pluginConfig = PluginConfigManager.getPluginConfig(RegisterConfig.class);
         return pluginConfig.isOpenMigration() && pluginConfig.isEnableSpringRegister()
                 && ClassUtils.loadClass("com.netflix.loadbalancer.Server", contextClassLoader).isPresent();

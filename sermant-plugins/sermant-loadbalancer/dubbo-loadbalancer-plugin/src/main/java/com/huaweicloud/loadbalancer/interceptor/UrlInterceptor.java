@@ -25,6 +25,7 @@ import com.huaweicloud.loadbalancer.config.LoadbalancerConfig;
 import com.huaweicloud.loadbalancer.constants.DubboUrlParamsConstants;
 import com.huaweicloud.loadbalancer.rule.LoadbalancerRule;
 import com.huaweicloud.loadbalancer.rule.RuleManager;
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
@@ -110,7 +111,7 @@ public class UrlInterceptor extends AbstractInterceptor {
             }
             supportRules = new HashSet<>();
             final Optional<Class<?>> lbClazz = ClassUtils
-                    .loadClass(lbClassName, Thread.currentThread().getContextClassLoader(), true);
+                    .loadClass(lbClassName, ClassLoaderManager.getContextClassLoaderOrUserClassLoader(), true);
             if (!lbClazz.isPresent()) {
                 return;
             }
@@ -134,7 +135,7 @@ public class UrlInterceptor extends AbstractInterceptor {
     }
 
     private boolean isAlibaba() {
-        return ClassUtils.loadClass(ALIBABA_LOADER, Thread.currentThread().getContextClassLoader(), false)
+        return ClassUtils.loadClass(ALIBABA_LOADER, ClassLoaderManager.getContextClassLoaderOrUserClassLoader(), false)
                 .isPresent();
     }
 

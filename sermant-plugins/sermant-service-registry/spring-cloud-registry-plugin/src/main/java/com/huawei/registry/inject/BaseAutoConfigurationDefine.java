@@ -19,6 +19,7 @@ package com.huawei.registry.inject;
 
 import com.huawei.registry.config.RegisterConfig;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.service.inject.ClassInjectDefine;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
@@ -48,6 +49,7 @@ public abstract class BaseAutoConfigurationDefine implements ClassInjectDefine {
      * @return 是否被加载
      */
     protected boolean isClassExistedOnCurrentClassLoader(String className) {
-        return ClassUtils.loadClass(className, Thread.currentThread().getContextClassLoader(), false).isPresent();
+        return ClassUtils.loadClass(className, ClassLoaderManager.getContextClassLoaderOrUserClassLoader(), false)
+                .isPresent();
     }
 }

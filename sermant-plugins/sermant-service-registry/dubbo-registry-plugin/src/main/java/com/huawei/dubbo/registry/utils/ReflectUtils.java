@@ -19,6 +19,7 @@ package com.huawei.dubbo.registry.utils;
 import com.huawei.dubbo.registry.cache.DubboCache;
 import com.huawei.dubbo.registry.constants.Constant;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.utils.ClassLoaderUtils;
 
@@ -77,7 +78,7 @@ public class ReflectUtils {
      * @return 宿主类
      */
     public static Optional<Class<?>> defineClass(String className) {
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         try {
             return Optional.of(ClassLoaderUtils.defineClass(className, contextClassLoader,
                 ClassLoaderUtils.getClassResource(ReflectUtils.class.getClassLoader(), className)));

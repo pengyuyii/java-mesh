@@ -21,6 +21,7 @@ import com.huawei.flowcontrol.common.handler.retry.RetryContext;
 import com.huawei.flowcontrol.common.handler.retry.policy.RetryPolicy;
 import com.huawei.flowcontrol.service.InterceptorSupporter;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.utils.ReflectUtils;
@@ -98,7 +99,7 @@ public class SpringLbChooseServerInterceptor extends InterceptorSupporter {
         if (defaultResponseClazz == null) {
             return Optional.empty();
         }
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         try {
             final Class<?> clazz = contextClassLoader.loadClass(defaultResponseClazz);
             final Constructor<?> declaredConstructor = clazz.getDeclaredConstructor(ServiceInstance.class);

@@ -21,6 +21,7 @@ import com.huawei.registry.context.RegisterContext;
 import com.huawei.registry.utils.CommonUtils;
 import com.huawei.registry.utils.HostUtils;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.plugin.service.PluginServiceManager;
@@ -120,7 +121,8 @@ public class RegistrationProperties implements BeanFactoryAware {
 
     private Optional<Object> tryGetInetUtilsByClazz() {
         final Optional<Class<?>> clazz = ClassUtils
-                .loadClass(INET_UTILS_CLASS, Thread.currentThread().getContextClassLoader(), false);
+                .loadClass(INET_UTILS_CLASS, ClassLoaderManager.getContextClassLoaderOrUserClassLoader(),
+                        false);
         if (!clazz.isPresent()) {
             return Optional.empty();
         }

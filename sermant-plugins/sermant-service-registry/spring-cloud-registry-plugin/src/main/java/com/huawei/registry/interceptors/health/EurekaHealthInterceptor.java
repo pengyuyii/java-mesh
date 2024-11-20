@@ -19,6 +19,7 @@ package com.huawei.registry.interceptors.health;
 import com.huawei.registry.context.RegisterContext;
 import com.huawei.registry.handler.SingleStateCloseHandler;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 
@@ -41,7 +42,7 @@ public class EurekaHealthInterceptor extends SingleStateCloseHandler {
     @Override
     protected void close() throws Exception {
         // 关闭Eureka定时器
-        final Class<?> discoveryClientClass = Thread.currentThread().getContextClassLoader()
+        final Class<?> discoveryClientClass = ClassLoaderManager.getContextClassLoaderOrUserClassLoader()
             .loadClass("com.netflix.discovery.DiscoveryClient");
         discoveryClientClass.getDeclaredMethod("shutdown").invoke(target);
         LOGGER.warning("Eureka register center has been closed by user.");

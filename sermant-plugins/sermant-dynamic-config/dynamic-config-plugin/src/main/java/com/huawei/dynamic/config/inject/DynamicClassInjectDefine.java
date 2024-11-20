@@ -19,6 +19,7 @@ package com.huawei.dynamic.config.inject;
 
 import com.huawei.dynamic.config.DynamicConfiguration;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.plugin.config.PluginConfigManager;
 import com.huaweicloud.sermant.core.service.inject.ClassInjectDefine;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
@@ -43,6 +44,7 @@ public abstract class DynamicClassInjectDefine implements ClassInjectDefine {
     @Override
     public boolean canInject() {
         return PluginConfigManager.getPluginConfig(DynamicConfiguration.class).isEnableDynamicConfig()
-                && ClassUtils.loadClass(REFRESH_CLASS, Thread.currentThread().getContextClassLoader()).isPresent();
+                && ClassUtils.loadClass(REFRESH_CLASS, ClassLoaderManager.getContextClassLoaderOrUserClassLoader())
+                .isPresent();
     }
 }

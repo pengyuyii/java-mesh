@@ -20,6 +20,7 @@ package com.huawei.flowcontrol.retry;
 import com.huawei.flowcontrol.retry.cluster.ClusterInvokerCreator;
 import com.huawei.flowcontrol.service.InterceptorSupporter;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.utils.ClassUtils;
 
@@ -67,7 +68,7 @@ public class ExtensionLoaderInterceptor extends InterceptorSupporter {
                 return context;
             }
             final Optional<Class<?>> retryInvokerClass;
-            final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+            final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
             if (APACHE_DUBBO_CLUSTER_CLASS_NAME.equals(type.getName())) {
                 ClassUtils.defineClass(
                     "com.huawei.flowcontrol.retry.cluster.ApacheDubboClusterInvoker", contextClassLoader);

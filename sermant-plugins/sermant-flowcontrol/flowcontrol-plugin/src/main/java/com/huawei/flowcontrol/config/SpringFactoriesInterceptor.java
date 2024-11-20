@@ -17,6 +17,7 @@
 
 package com.huawei.flowcontrol.config;
 
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
@@ -100,7 +101,7 @@ public class SpringFactoriesInterceptor extends AbstractInterceptor {
 
     private void injectConfigurationsWithLowVersion(Object result, String factoryName) {
         final ClassInjectService service = ServiceManager.getService(ClassInjectService.class);
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         if (result instanceof List) {
             final List<String> convertedResult = (List<String>) result;
             CLASS_DEFINES.forEach(classInjectDefine -> {
@@ -114,7 +115,7 @@ public class SpringFactoriesInterceptor extends AbstractInterceptor {
 
     private void injectConfigurations(Object result) {
         final ClassInjectService service = ServiceManager.getService(ClassInjectService.class);
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         final boolean isMultiValueMap = result instanceof MultiValueMap;
         if (result instanceof Map) {
             // spring 高版本处理, 针对List其为不可变list，需做一层处理

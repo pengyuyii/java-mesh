@@ -22,6 +22,7 @@ import com.huaweicloud.loadbalancer.config.LbContext;
 import com.huaweicloud.loadbalancer.config.LoadbalancerConfig;
 import com.huaweicloud.loadbalancer.config.RibbonLoadbalancerType;
 import com.huaweicloud.loadbalancer.rule.RuleManager;
+import com.huaweicloud.sermant.core.classloader.ClassLoaderManager;
 import com.huaweicloud.sermant.core.common.LoggerFactory;
 import com.huaweicloud.sermant.core.plugin.agent.entity.ExecuteContext;
 import com.huaweicloud.sermant.core.plugin.agent.interceptor.AbstractInterceptor;
@@ -67,7 +68,7 @@ public class RibbonLoadBalancerInterceptor extends AbstractInterceptor {
 
     private final Function<RibbonLoadbalancerType, Optional<AbstractLoadBalancerRule>> ruleCreator = type -> {
         final String clazzName = type.getClazzName();
-        final ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+        final ClassLoader contextClassLoader = ClassLoaderManager.getContextClassLoaderOrUserClassLoader();
         try {
             final Class<?> ruleClazz = contextClassLoader.loadClass(clazzName);
             return Optional.of((AbstractLoadBalancerRule) ruleClazz.newInstance());
